@@ -1,0 +1,92 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\begin{document}
+
+\section*{Personal Information}
+External ID: {{ cv.external_id|escape_latex }} \\
+Submitted At: {{ cv.submitted_at }} % No date filter; use raw ISO string
+
+\section*{Education}
+{% if educations %}
+{% for edu in educations %}
+\subsection*{{\edu.degree_title|escape_latex} at {\edu.university|escape_latex}}
+Expected Graduation: {{ edu.expected_graduation|escape_latex }} \\
+{% if edu.certificates %}
+\subsubsection*{Certificates}
+{% for cert in edu.certificates %}
+- {{ cert.certificate_title|escape_latex }} ({{ cert.year|escape_latex }}, {{ cert.organization|escape_latex }}) \\
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+\section*{Professional Experience}
+{% if experiences %}
+{% for exp in experiences %}
+\subsection*{{\exp.position_title|escape_latex} at {\exp.company|escape_latex}}
+Dates: {{ exp.dates|escape_latex }} \\
+{% if exp.accomplishments %}Accomplishments: {{ exp.accomplishments|escape_latex }}{% endif %}
+{% endfor %}
+{% endif %}
+
+\section*{Professional Competencies}
+{% if competencies %}
+{% for comp in competencies %}
+\subsection*{{\comp.competency_type|escape_latex}}
+Key Accomplishments: {{ comp.key_accomplishments|escape_latex }}
+{% endfor %}
+{% endif %}
+
+\section*{Projects}
+{% if projects %}
+{% for proj in projects %}
+\subsection*{{\proj.project_title|escape_latex} ({{ proj.year|escape_latex }})}
+Summary: {{ proj.summary|escape_latex }}
+{% endfor %}
+{% endif %}
+
+\section*{Technical Skills}
+{% if technical_skills.programming_languages or technical_skills.frameworks_databases or technical_skills.tools %}
+Programming Languages: {{ technical_skills.programming_languages|escape_latex|default('N/A') }} \\
+Frameworks & Databases: {{ technical_skills.frameworks_databases|escape_latex|default('N/A') }} \\
+Tools: {{ technical_skills.tools|escape_latex|default('N/A') }}
+{% endif %}
+
+\section*{Languages}
+{% if languages %}
+{% for lang in languages %}
+- {{ lang.name|escape_latex }} \\
+{% endfor %}
+{% endif %}
+
+\section*{Community Involvement}
+{% if community_involvements %}
+{% for comm in community_involvements %}
+\subsection*{{\comm.position_title|escape_latex} at {\comm.organization|escape_latex}}
+Dates: {{ comm.dates|escape_latex }} \\
+{% if comm.achievements %}Achievements: {{ comm.achievements|escape_latex }}{% endif %}
+{% endfor %}
+{% endif %}
+
+\section*{Awards}
+{% if awards %}
+{% for award in awards %}
+\subsection*{{\award.award_name|escape_latex} ({{ award.year|escape_latex }})}
+{% if award.short_description %}Description: {{ award.short_description|escape_latex }}{% endif %}
+{% endfor %}
+{% endif %}
+
+\section*{References}
+{% if references %}
+{% for ref in references %}
+\subsection*{{\ref.reference_name|escape_latex}}
+Position: {{ ref.position|escape_latex }} \\
+Email: {{ ref.email|escape_latex }} \\
+Phone: {{ ref.phone|escape_latex }}
+{% endfor %}
+{% endif %}
+
+\end{document}

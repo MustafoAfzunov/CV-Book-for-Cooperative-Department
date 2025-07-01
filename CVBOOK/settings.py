@@ -4,10 +4,12 @@ from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 SECRET_KEY = config('SECRET_KEY')
 
 # Quick-start development settings
 DEBUG = config('DEBUG', default=True, cast=bool)
+
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=[], cast=lambda v: [s.strip() for s in v.split(',')])
 
 # Application definition
@@ -22,6 +24,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'authentication',
     'corsheaders',
+    'cv',
+    'django_tex',
 ]
 
 MIDDLEWARE = [
@@ -38,11 +42,10 @@ MIDDLEWARE = [
 # URL Configuration
 ROOT_URLCONF = 'CVBOOK.urls'
 
-# Templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -52,6 +55,15 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
         },
+    },
+    {
+        'NAME': 'tex',
+        'BACKEND': 'django_tex.engine.TeXEngine',
+        'DIRS': [
+            BASE_DIR / 'cv' / 'templates',  # Main template directory for cv app
+            BASE_DIR / 'templates' / 'tex',  # Additional tex templates directory
+        ],
+        'APP_DIRS': True,
     },
 ]
 
@@ -84,16 +96,20 @@ SIMPLE_JWT = {
 }
 
 # Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Changed to SMTP
-EMAIL_HOST = 'smtp.gmail.com'  # Corrected from 'afzunov12@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='afzunov12@gmail.com')  # Gmail account
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # App Password if 2FA enabled
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='afzunov12@gmail.com')  # Sender email
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='afzunov12@gmail.com')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='afzunov12@gmail.com')
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default=['http://localhost:8000'], cast=lambda v: [s.strip() for s in v.split(',')])
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS', 
+    default=['http://localhost:8000'], 
+    cast=lambda v: [s.strip() for s in v.split(',')]
+)
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -103,6 +119,18 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# LaTeX/PDF settings
+TEX_OUTPUT_DIR = BASE_DIR / 'media' / 'pdfs'  # Where PDFs will be saved
+TEX_INPUT_DIR = BASE_DIR / 'cv' / 'templates'  # Where LaTeX templates are stored
+
+# Django-tex settings (if needed for additional configuration)
+LATEX_INTERPRETER = 'pdflatex'  # LaTeX interpreter to use

@@ -12,12 +12,13 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 
-from .models import CVSubmission, Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference, CVRequest
-
 logger = logging.getLogger(__name__)
 
 def generate_pdf(cv):
     logger.info("Preparing context for PDF generation")
+    # Lazy import to avoid circular dependency
+    from .models import Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
+    
     educations = cv.educations.all()
     experiences = cv.experiences.all()
     competencies = cv.competencies.all()
@@ -117,28 +118,6 @@ def generate_pdf(cv):
     doc.build(story)
     return f'/media/pdfs/cv_{cv.id}.pdf'
 
-class CVRequestView(APIView):
-    parser_classes = [JSONParser]
-
-    def post(self, request):
-        logger.info("CVRequestView.post called with data: %s", request.data)
-        data = request.data
-        name = data.get('name')
-        surname = data.get('surname')
-        email = data.get('email')
-        if not all([name, surname, email]):
-            logger.error("Missing required fields: name, surname, or email")
-            return Response({"error": "name, surname, and email are required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if request already exists for this email
-        if CVRequest.objects.filter(email=email).exists():
-            logger.warning("Request already exists for email: %s", email)
-            return Response({"error": "A request already exists for this email"}, status=status.HTTP_400_BAD_REQUEST)
-
-        cv_request = CVRequest.objects.create(name=name, surname=surname, email=email, status='pending')
-        logger.info("CV request created with id: %s", cv_request.id)
-        return Response({"message": "CV request submitted, awaiting admin approval", "request_id": cv_request.id}, status=status.HTTP_201_CREATED)
-
 class CVSubmitView(APIView):
     parser_classes = [JSONParser]
 
@@ -150,29 +129,25 @@ class CVSubmitView(APIView):
         if not all([email, external_id]):
             logger.error("Missing email or external_id")
             return Response({"error": "email and external_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Lazy import to avoid circular dependency
+        from .models import CVSubmission
+        
         if CVSubmission.objects.filter(external_id=external_id).exists():
             logger.warning("CV already exists for external_id: %s", external_id)
             return Response({"error": "CV already exists for this external ID"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if a valid approved request exists for this email
-        cv_request = CVRequest.objects.filter(email=email).first()
-        logger.debug("Found CVRequest for email %s: %s", email, cv_request)
-        if not cv_request:
-            logger.warning("No CVRequest found for email: %s", email)
-            return Response({"error": "No request exists for this email. Please submit a request first."}, status=status.HTTP_403_FORBIDDEN)
-        if cv_request.status != 'approved':
-            logger.warning("Request for email %s is %s, not approved", email, cv_request.status)
-            return Response({"error": "CV generation requires admin approval. Your request is pending."}, status=status.HTTP_403_FORBIDDEN)
-
-        cv = CVSubmission.objects.create(external_id=external_id, request=cv_request)
+        cv = CVSubmission.objects.create(external_id=external_id)
 
         # Handle Education and Certificates
+        from .models import Education, Certificate
         for edu_data in data.get('educations', []):
             education = Education.objects.create(cv=cv, **{k: v for k, v in edu_data.items() if k != 'certificates'})
             for cert_data in edu_data.get('certificates', []):
                 Certificate.objects.create(education=education, **cert_data)
 
         # Handle other sections
+        from .models import ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         for exp_data in data.get('experiences', []):
             ProfessionalExperience.objects.create(cv=cv, **exp_data)
         for comp_data in data.get('competencies', []):
@@ -195,10 +170,11 @@ class CVSubmitView(APIView):
         logger.info("PDF generated at: %s", pdf_path)
 
         return Response({"message": "CV submitted", "cv_id": cv.id, "pdf_url": pdf_path}, status=status.HTTP_201_CREATED)
-
 class CVPDFView(APIView):
     def get(self, request, cv_id):
         logger.info("CVPDFView.get called for cv_id: %s", cv_id)
+        # Lazy import to avoid circular dependency
+        from .models import CVSubmission
         try:
             cv = CVSubmission.objects.get(id=cv_id)
             pdf_path = os.path.join(settings.TEX_OUTPUT_DIR, f'cv_{cv.id}.pdf')
@@ -215,12 +191,10 @@ class CVEditView(APIView):
 
     def get(self, request, cv_id):
         logger.info("CVEditView.get called for cv_id: %s", cv_id)
+        # Lazy import to avoid circular dependency
+        from .models import CVSubmission, Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         try:
             cv = CVSubmission.objects.get(id=cv_id)
-            if cv.request and cv.request.status != 'approved':
-                logger.warning("CV %s linked to unapproved request", cv_id)
-                return Response({"error": "CV editing requires admin approval. Request is pending."}, status=status.HTTP_403_FORBIDDEN)
-
             data = {
                 "external_id": cv.external_id,
                 "educations": [
@@ -307,12 +281,10 @@ class CVEditView(APIView):
 
     def put(self, request, cv_id):
         logger.info("CVEditView.put called for cv_id: %s with data: %s", cv_id, request.data)
+        # Lazy import to avoid circular dependency
+        from .models import CVSubmission, Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         try:
             cv = CVSubmission.objects.get(id=cv_id)
-            if cv.request and cv.request.status != 'approved':
-                logger.warning("CV %s linked to unapproved request", cv_id)
-                return Response({"error": "CV editing requires admin approval. Request is pending."}, status=status.HTTP_403_FORBIDDEN)
-
             data = request.data
             external_id = data.get('external_id', cv.external_id)
             if external_id != cv.external_id:
@@ -449,13 +421,10 @@ class CVEditView(APIView):
 class CVDetailView(APIView):
     def get(self, request, cv_id):
         logger.info("CVDetailView.get called for cv_id: %s", cv_id)
+        # Lazy import to avoid circular dependency
+        from .models import CVSubmission, Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         try:
             cv = CVSubmission.objects.get(id=cv_id)
-            # Check if the request linked to this CV is approved
-            if cv.request and cv.request.status != 'approved':
-                logger.warning("CV %s linked to unapproved request", cv_id)
-                return Response({"error": "CV access requires admin approval. Request is pending."}, status=status.HTTP_403_FORBIDDEN)
-
             data = {
                 "external_id": cv.external_id,
                 "submitted_at": cv.submitted_at.isoformat(),
@@ -533,7 +502,23 @@ class CVDetailView(APIView):
 class CVListView(APIView):
     def get(self, request):
         logger.info("CVListView.get called")
-        # No authentication check; all users can view CVBook
-        cvs = CVSubmission.objects.all().values('id', 'external_id', 'submitted_at')
-        logger.info("CVList retrieved: %s", list(cvs))
-        return Response(list(cvs), status=status.HTTP_200_OK)
+        from .models import CVSubmission
+        cvs = CVSubmission.objects.all().prefetch_related('technical_skills', 'languages')
+        serialized_data = [
+            {
+                'id': cv.id,
+                'external_id': cv.external_id,
+                'submitted_at': cv.submitted_at,
+                'technical_skills': [
+                    {
+                        'programming_languages': ts.programming_languages,
+                        'frameworks_databases': ts.frameworks_databases,
+                        'tools': ts.tools
+                    }
+                    for ts in cv.technical_skills.all()
+                ] if cv.technical_skills.exists() else [],
+                'languages': [{'name': lang.name} for lang in cv.languages.all()] if cv.languages.exists() else []
+            }
+            for cv in cvs
+        ]
+        return Response(serialized_data, status=status.HTTP_200_OK)

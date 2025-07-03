@@ -1,20 +1,9 @@
 from django.db import models
 
-class CVRequest(models.Model):
-    name = models.CharField(max_length=100)
-    surname = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)  # No default, no null
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.name} {self.surname} - {self.status}"
-
 class CVSubmission(models.Model):
     external_id = models.CharField(max_length=100, unique=True)  # ID from the larger platform
     submitted_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, default='pending')  # e.g., pending, processed
-    request = models.ForeignKey(CVRequest, on_delete=models.CASCADE, null=True, blank=True)  # Link to CVRequest instead of User
+    status = models.CharField(max_length=20, default='processed')  # Updated default to 'processed' since no pending state
 
     def __str__(self):
         return f"CV-{self.external_id}"

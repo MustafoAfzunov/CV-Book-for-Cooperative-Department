@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCA CV Book</title>
+    <link rel="stylesheet" href="/static/cv/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-title">UCA University of Central Asia</div>
+        <nav class="header-nav">
+            <a href="#">Home Page</a>
+            <a href="#">About Us</a>
+            <a href="#">Majors</a>
+            <a href="/cv/create/">Create CV</a> <!-- Added link to CV form -->
+        </nav>
+    </header>
+
+    <section class="filter-section">
+        <div class="filter-tabs">
+            <span class="filter-tab active" data-filter="all">ALL</span>
+            <span class="filter-tab" data-filter="computer-science">COMPUTER SCIENCE</span>
+            <span class="filter-tab" data-filter="communication-media">COMMUNICATION AND MEDIA</span>
+            <span class="filter-tab" data-filter="earth-environment">EARTH AND ENVIRONMENTAL SCIENCES</span>
+            <span class="filter-tab" data-filter="global-economics">GLOBAL ECONOMICS</span>
+        </div>
+
+        <div class="filter-controls">
+            <div class="filter-dropdowns">
+                <select class="dropdown">
+                    <option value="">COUNTRY</option>
+                    <option value="Kyrgyzstan">Kyrgyzstan</option>
+                    <option value="Tajikistan">Tajikistan</option>
+                </select>
+                <select class="dropdown">
+                    <option value="">LANGUAGE</option>
+                    <option value="English">English</option>
+                    <option value="Russian">Russian</option>
+                </select>
+                <select class="dropdown">
+                    <option value="">TECHNICAL SKILLS</option>
+                    <option value="Programming">Programming</option>
+                    <option value="Data Analysis">Data Analysis</option>
+                </select>
+                <select class="dropdown">
+                    <option value="">NON-TECHNICAL SKILLS</option>
+                    <option value="Communication">Communication</option>
+                    <option value="Teamwork">Teamwork</option>
+                </select>
+                <select class="dropdown">
+                    <option value="asc">A-Z</option>
+                    <option value="desc">Z-A</option>
+                </select>
+            </div>
+            <div class="filter-search-sort">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="main-content">
+        <h1 class="main-heading">Student Profiles</h1>
+        <div class="student-grid" id="student-grid">
+            <!-- Cards will be dynamically inserted here -->
+        </div>
+    </main>
+
+    <div class="chat-icon">
+        <i class="fas fa-comment"></i>
+    </div>
+
+    <div id="message"></div>
+    <script src="/static/cv/script.js"></script>
+</body>
+</html>

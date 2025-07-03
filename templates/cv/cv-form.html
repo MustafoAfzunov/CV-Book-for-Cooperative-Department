@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Builder Form</title>
+    <link rel="stylesheet" href="/static/cv/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="modal" id="cvFormModal">
+        <div class="modal-content">
+            <h2>CV Builder Form</h2>
+            
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-step active">1</div>
+                <div class="progress-step">2</div>
+                <div class="progress-step">3</div>
+                <div class="progress-step">4</div>
+                <div class="progress-step">5</div>
+                <div class="progress-step">6</div>
+                <div class="progress-step">7</div>
+                <div class="progress-step">8</div>
+                <div class="progress-step">9</div>
+                <div class="progress-step">10</div>
+            </div>
+            
+            <div class="progress-text">
+                Step <span id="currentStep">1</span> of <span id="totalSteps">10</span>
+            </div>
+            
+            <form id="cvForm" method="post">
+                {% csrf_token %}
+                <!-- STEP 1: PERSONAL INFORMATION -->
+                <div class="form-step active" id="step-1">
+                    <h3>Personal Information</h3>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <div class="input-group">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="email" name="email" required placeholder="Enter your email">
+                            </div>
+                            <div class="error-message">This field is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="externalId">External ID *</label>
+                            <div class="input-group">
+                                <i class="fas fa-id-card"></i>
+                                <input type="text" id="externalId" name="externalId" required placeholder="Enter your external ID (e.g., student ID)">
+                            </div>
+                            <div class="error-message">This field is required</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- STEP 2: EDUCATION -->
+                <div class="form-step" id="step-2" style="display:none;">
+                    <h3>Education</h3>
+                    <div id="educationContainer">
+                        <div class="education-entry" id="education-1">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="degreeTitle1">Degree Title *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-graduation-cap"></i>
+                                        <input type="text" id="degreeTitle1" name="degreeTitle1" required placeholder="Enter your degree title">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="university1">University *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-university"></i>
+                                        <input type="text" id="university1" name="university1" required placeholder="Enter your university">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="expectedGraduation1">Expected Graduation *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-calendar"></i>
+                                        <input type="text" id="expectedGraduation1" name="expectedGraduation1" required placeholder="e.g., 2025 or June 2025">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                            </div>
+                            <div id="certificateContainer1">
+                                <!-- Certificates will be added dynamically -->
+                            </div>
+                            <button type="button" class="add-btn" onclick="addCertificate(1)">+ Add Certificate</button>
+                            <button type="button" class="remove-btn" onclick="removeEducation(this)" style="display:none;">- Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addEducation()">+ Add Another Education</button>
+                </div>
+                
+                <!-- STEP 3: PROFESSIONAL EXPERIENCE -->
+                <div class="form-step" id="step-3" style="display:none;">
+                    <h3>Professional Experience</h3>
+                    <div id="experienceContainer">
+                        <div class="experience-entry" id="experience-1">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="positionTitle1">Position Title *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-briefcase"></i>
+                                        <input type="text" id="positionTitle1" name="positionTitle1" required placeholder="Enter your position">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="company1">Company *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-building"></i>
+                                        <input type="text" id="company1" name="company1" required placeholder="Enter your company">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="dates1">Dates *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-calendar"></i>
+                                        <input type="text" id="dates1" name="dates1" required placeholder="e.g., 2023-2024">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="accomplishments1">Accomplishments</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-list"></i>
+                                        <textarea id="accomplishments1" name="accomplishments1" placeholder="List your accomplishments"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeExperience(this)" style="display:none;">- Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addExperience()">+ Add Another Experience</button>
+                </div>
+                
+                <!-- STEP 4: PROFESSIONAL COMPETENCIES -->
+                <div class="form-step" id="step-4" style="display:none;">
+                    <h3>Professional Competencies</h3>
+                    <div id="competencyContainer">
+                        <div class="competency-entry" id="competency-1">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="competencyType1">Competency Type *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-star"></i>
+                                        <input type="text" id="competencyType1" name="competencyType1" required placeholder="e.g., Leadership">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="keyAccomplishments1">Key Accomplishments</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-list"></i>
+                                        <textarea id="keyAccomplishments1" name="keyAccomplishments1" placeholder="Describe your accomplishments"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeCompetency(this)" style="display:none;">- Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addCompetency()">+ Add Another Competency</button>
+                </div>
+                
+                <!-- STEP 5: PROJECTS -->
+                <div class="form-step" id="step-5" style="display:none;">
+                    <h3>Projects</h3>
+                    <div id="projectContainer">
+                        <div class="project-entry" id="project-1">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="projectTitle1">Project Title *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-project-diagram"></i>
+                                        <input type="text" id="projectTitle1" name="projectTitle1" required placeholder="Enter project title">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="year1">Year *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-calendar"></i>
+                                        <input type="text" id="year1" name="year1" required placeholder="e.g., 2023">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="summary1">Summary</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-list"></i>
+                                        <textarea id="summary1" name="summary1" placeholder="Brief project summary"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeProject(this)" style="display:none;">- Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addProject()">+ Add Another Project</button>
+                </div>
+                
+                <!-- STEP 6: TECHNICAL SKILLS -->
+                <div class="form-step" id="step-6" style="display:none;">
+                    <h3>Technical Skills</h3>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="programmingLanguages">Programming Languages</label>
+                            <div class="input-group">
+                                <i class="fas fa-code"></i>
+                                <input type="text" id="programmingLanguages" name="programmingLanguages" placeholder="e.g., Python, Java">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="frameworksDatabases">Frameworks/Databases</label>
+                            <div class="input-group">
+                                <i class="fas fa-database"></i>
+                                <input type="text" id="frameworksDatabases" name="frameworksDatabases" placeholder="e.g., Django, MySQL">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="tools">Tools</label>
+                            <div class="input-group">
+                                <i class="fas fa-tools"></i>
+                                <input type="text" id="tools" name="tools" placeholder="e.g., Git, Docker">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- STEP 7: SPOKEN LANGUAGES -->
+                <div class="form-step" id="step-7" style="display:none;">
+                    <h3>Spoken Languages</h3>
+                    <div id="languageContainer">
+                        <div class="language-entry" id="language-1">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="languageName1">Language Name *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-language"></i>
+                                        <input type="text" id="languageName1" name="languageName1" required placeholder="e.g., English">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeLanguage(this)" style="display:none;">- Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addLanguage()">+ Add Another Language</button>
+                </div>
+                
+                <!-- STEP 8: COMMUNITY INVOLVEMENT -->
+                <div class="form-step" id="step-8" style="display:none;">
+                    <h3>Community Involvement</h3>
+                    <div id="communityContainer">
+                        <div class="community-entry" id="community-1">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="positionTitle1">Position Title</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-users"></i>
+                                        <input type="text" id="positionTitle1" name="positionTitle1" placeholder="e.g., Volunteer">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="organization1">Organization</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-building"></i>
+                                        <input type="text" id="organization1" name="organization1" placeholder="e.g., Red Cross">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="dates1">Dates</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-calendar"></i>
+                                        <input type="text" id="dates1" name="dates1" placeholder="e.g., 2023-2024">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="achievements1">Achievements</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-list"></i>
+                                        <textarea id="achievements1" name="achievements1" placeholder="Describe achievements"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeCommunity(this)" style="display:none;">- Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addCommunity()">+ Add Another Involvement</button>
+                </div>
+                
+                <!-- STEP 9: AWARDS -->
+                <div class="form-step" id="step-9" style="display:none;">
+                    <h3>Awards</h3>
+                    <div id="awardContainer">
+                        <div class="award-entry" id="award-1">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="awardName1">Award Name *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-trophy"></i>
+                                        <input type="text" id="awardName1" name="awardName1" required placeholder="Enter award name">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="year1">Year *</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-calendar"></i>
+                                        <input type="text" id="year1" name="year1" required placeholder="e.g., 2023">
+                                    </div>
+                                    <div class="error-message">This field is required</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="shortDescription1">Short Description</label>
+                                    <div class="input-group">
+                                        <i class="fas fa-list"></i>
+                                        <textarea id="shortDescription1" name="shortDescription1" placeholder="Brief description"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="removeAward(this)" style="display:none;">- Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addAward()">+ Add Another Award</button>
+                </div>
+                
+                <!-- STEP 10: REVIEW AND SUBMIT -->
+                <div class="form-step" id="step-10" style="display:none;">
+                    <h3>Review Your CV & Submit</h3>
+                    <div id="reviewInfo" class="review-section">
+                        <!-- Review content will be dynamically inserted here -->
+                    </div>
+                    <button type="submit" id="generateCvBtn">Generate CV</button>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="save-draft-btn" onclick="saveDraft()">Save Draft</button>
+                    <button type="button" class="clear-form-btn" onclick="clearForm()">Clear Form</button>
+                    <button type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button>
+                    <button type="button" id="nextBtn" onclick="nextPrev(1)">Next</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/cv/script.js"></script>
+</body>
+</html>

@@ -1,15 +1,14 @@
+import re
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Security settings
 SECRET_KEY = config('SECRET_KEY')
-
-# Quick-start development settings
 DEBUG = config('DEBUG', default=True, cast=bool)
-
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=[], cast=lambda v: [s.strip() for s in v.split(',')])
 
 # Application definition
@@ -26,11 +25,13 @@ INSTALLED_APPS = [
     'corsheaders',
     'cv',
     'django_tex',
+    'whitenoise.runserver_nostatic',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -39,7 +40,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# URL Configuration
 ROOT_URLCONF = 'CVBOOK.urls'
 
 TEMPLATES = [
@@ -60,8 +60,8 @@ TEMPLATES = [
         'NAME': 'tex',
         'BACKEND': 'django_tex.engine.TeXEngine',
         'DIRS': [
-            BASE_DIR / 'cv' / 'templates',  # Main template directory for cv app
-            BASE_DIR / 'templates' / 'tex',  # Additional tex templates directory
+            BASE_DIR / 'cv' / 'templates',
+            BASE_DIR / 'templates' / 'tex',
         ],
         'APP_DIRS': True,
     },
@@ -78,18 +78,17 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD', default='#Ubuntu2004'),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
+        'OPTIONS': {'connect_timeout': 5},
     }
 }
 
 # Authentication
 AUTH_USER_MODEL = 'authentication.CustomUser'
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -107,7 +106,7 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='afzunov12@gmail.com')
 # CORS settings
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS', 
-    default=['http://localhost:8000'], 
+    default=['http://localhost:8000', 'http://localhost:3000'], 
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
@@ -119,8 +118,9 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]  # Points to cvbook/static/
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -130,8 +130,31 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # LaTeX/PDF settings
-TEX_OUTPUT_DIR = BASE_DIR / 'media' / 'pdfs'  # Where PDFs will be saved
-TEX_INPUT_DIR = BASE_DIR / 'cv' / 'templates'  # Where LaTeX templates are stored
+TEX_OUTPUT_DIR = BASE_DIR / 'media' / 'pdfs'
+WHITENOISE_ALLOW_ALL_ORIGINS = False
+TEX_INPUT_DIR = BASE_DIR / 'cv' / 'templates'
+LATEX_INTERPRETER = 'pdflatex'
 
-# Django-tex settings (if needed for additional configuration)
-LATEX_INTERPRETER = 'pdflatex'  # LaTeX interpreter to use
+# Security enhancements
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
+
+# Ignore source map 404s
+IGNORABLE_404_URLS = [
+    re.compile(r'\.js\.map$'),
+    re.compile(r'\.hot-update\.js$'),
+]
+
+# Whitenoise settings
+WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_ALLOW_ALL_ORIGINS = True
+WHITENOISE_INDEX_FILE = True  # For SPA support

@@ -11,12 +11,12 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
+from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
 
 def generate_pdf(cv):
     logger.info("Preparing context for PDF generation")
-    # Lazy import to avoid circular dependency
     from .models import Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
     
     educations = cv.educations.all()
@@ -35,17 +35,18 @@ def generate_pdf(cv):
     styles = getSampleStyleSheet()
     story = []
 
-    story.append(Paragraph(f"CV for {cv.external_id}", styles['Heading1']))
+    story.append(Paragraph(f"CV for {cv.name} {cv.surname}", styles['Heading1']))
+    story.append(Paragraph(f"Email: {cv.email}", styles['Normal']))
     story.append(Paragraph(f"Submitted on: {cv.submitted_at.isoformat()}", styles['Normal']))
     story.append(Spacer(1, 12))
 
     if educations:
         story.append(Paragraph("Education", styles['Heading2']))
         for edu in educations:
-            edu_text = f"{edu.degree_title} at {edu.university}, Expected: {edu.expected_graduation}"
+            edu_text = f"{edu.degree_title or 'N/A'} at {edu.university or 'N/A'}, Expected: {edu.expected_graduation or 'N/A'}"
             story.append(Paragraph(edu_text, styles['Normal']))
             for cert in edu.certificates.all():
-                cert_text = f"- {cert.certificate_title} ({cert.year}, {cert.organization})"
+                cert_text = f"- {cert.certificate_title or 'N/A'} ({cert.year or 'N/A'}, {cert.organization or 'N/A'})"
                 story.append(Paragraph(cert_text, styles['Normal']))
         story.append(Spacer(1, 12))
 
@@ -53,7 +54,7 @@ def generate_pdf(cv):
         story.append(Paragraph("Professional Experience", styles['Heading2']))
         table_data = [["Position", "Company", "Dates", "Accomplishments"]]
         for exp in experiences:
-            table_data.append([exp.position_title, exp.company, exp.dates, exp.accomplishments or "N/A"])
+            table_data.append([exp.position_title or "N/A", exp.company or "N/A", exp.dates or "N/A", exp.accomplishments or "N/A"])
         table = Table(table_data)
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
@@ -75,48 +76,53 @@ def generate_pdf(cv):
     if competencies:
         story.append(Paragraph("Competencies", styles['Heading2']))
         for comp in competencies:
-            story.append(Paragraph(f"{comp.competency_type}: {comp.key_accomplishments}", styles['Normal']))
+            story.append(Paragraph(f"{comp.competency_type or 'N/A'}: {comp.key_accomplishments or 'N/A'}", styles['Normal']))
         story.append(Spacer(1, 12))
 
     if projects:
         story.append(Paragraph("Projects", styles['Heading2']))
         for proj in projects:
-            story.append(Paragraph(f"{proj.project_title} ({proj.year}): {proj.summary}", styles['Normal']))
+            story.append(Paragraph(f"{proj.project_title or 'N/A'} ({proj.year or 'N/A'}): {proj.summary or 'N/A'}", styles['Normal']))
         story.append(Spacer(1, 12))
 
     if technical_skills:
         story.append(Paragraph("Technical Skills", styles['Heading2']))
-        story.append(Paragraph(f"Languages: {technical_skills.programming_languages}", styles['Normal']))
-        story.append(Paragraph(f"Frameworks: {technical_skills.frameworks_databases}", styles['Normal']))
-        story.append(Paragraph(f"Tools: {technical_skills.tools}", styles['Normal']))
+        story.append(Paragraph(f"Languages: {technical_skills.programming_languages or 'N/A'}", styles['Normal']))
+        story.append(Paragraph(f"Frameworks: {technical_skills.frameworks_databases or 'N/A'}", styles['Normal']))
+        story.append(Paragraph(f"Tools: {technical_skills.tools or 'N/A'}", styles['Normal']))
         story.append(Spacer(1, 12))
 
     if languages:
         story.append(Paragraph("Languages", styles['Heading2']))
         for lang in languages:
-            story.append(Paragraph(f"- {lang.name}", styles['Normal']))
+            story.append(Paragraph(f"- {lang.name or 'N/A'}", styles['Normal']))
         story.append(Spacer(1, 12))
 
     if community_involvements:
         story.append(Paragraph("Community Involvement", styles['Heading2']))
         for ci in community_involvements:
-            story.append(Paragraph(f"{ci.position_title} at {ci.organization}, {ci.dates}: {ci.achievements}", styles['Normal']))
+            story.append(Paragraph(f"{ci.position_title or 'N/A'} at {ci.organization or 'N/A'}, {ci.dates or 'N/A'}: {ci.achievements or 'N/A'}", styles['Normal']))
         story.append(Spacer(1, 12))
 
     if awards:
         story.append(Paragraph("Awards", styles['Heading2']))
         for award in awards:
-            story.append(Paragraph(f"{award.award_name} ({award.year}): {award.short_description or 'N/A'}", styles['Normal']))
+            story.append(Paragraph(f"{award.award_name or 'N/A'} ({award.year or 'N/A'}): {award.short_description or 'N/A'}", styles['Normal']))
         story.append(Spacer(1, 12))
 
     if references:
         story.append(Paragraph("References", styles['Heading2']))
         for ref in references:
-            story.append(Paragraph(f"{ref.reference_name}, {ref.position}, {ref.email}, {ref.phone}", styles['Normal']))
+            story.append(Paragraph(f"{ref.reference_name or 'N/A'}, {ref.position or 'N/A'}, {ref.email or 'N/A'}, {ref.phone or 'N/A'}", styles['Normal']))
         story.append(Spacer(1, 12))
 
-    doc.build(story)
-    return f'/media/pdfs/cv_{cv.id}.pdf'
+    try:
+        doc.build(story)
+        relative_path = os.path.relpath(pdf_path, settings.MEDIA_ROOT).replace(os.sep, '/')
+        return f'/media/{relative_path}'
+    except Exception as e:
+        logger.error(f"Failed to generate PDF for cv_id {cv.id}: {str(e)}")
+        raise
 
 class CVSubmitView(APIView):
     parser_classes = [JSONParser]
@@ -124,56 +130,104 @@ class CVSubmitView(APIView):
     def post(self, request):
         logger.info("CVSubmitView.post called with data: %s", request.data)
         data = request.data
+        name = data.get('name')
+        surname = data.get('surname')
         email = data.get('email')
-        external_id = data.get('external_id')
-        if not all([email, external_id]):
-            logger.error("Missing email or external_id")
-            return Response({"error": "email and external_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+        major = data.get('major', '')
+        if not all([name, surname, email]):
+            logger.error("Missing required fields: name, surname, or email")
+            return Response({"error": "name, surname, and email are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Lazy import to avoid circular dependency
         from .models import CVSubmission
-        
-        if CVSubmission.objects.filter(external_id=external_id).exists():
-            logger.warning("CV already exists for external_id: %s", external_id)
-            return Response({"error": "CV already exists for this external ID"}, status=status.HTTP_400_BAD_REQUEST)
+        # Get or create CV, update if exists
+        cv, created = CVSubmission.objects.get_or_create(email=email, defaults={'name': name, 'surname': surname, 'major': major})
+        if not created:
+            cv.name = name
+            cv.surname = surname
+            cv.major = major
+            cv.save()
+            # Clear existing related data to update
+            cv.educations.all().delete()
+            cv.experiences.all().delete()
+            cv.competencies.all().delete()
+            cv.projects.all().delete()
+            cv.technical_skills.all().delete()
+            cv.languages.all().delete()
+            cv.community_involvements.all().delete()
+            cv.awards.all().delete()
+            cv.references.all().delete()
 
-        cv = CVSubmission.objects.create(external_id=external_id)
-
-        # Handle Education and Certificates
-        from .models import Education, Certificate
+        from .models import Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         for edu_data in data.get('educations', []):
+            if not all([edu_data.get(k) for k in ['degree_title', 'university', 'expected_graduation']]):
+                logger.error("Invalid education data: %s", edu_data)
+                return Response({"error": "Invalid education data"}, status=status.HTTP_400_BAD_REQUEST)
             education = Education.objects.create(cv=cv, **{k: v for k, v in edu_data.items() if k != 'certificates'})
             for cert_data in edu_data.get('certificates', []):
+                if not cert_data.get('certificate_title'):
+                    logger.error("Invalid certificate data: %s", cert_data)
+                    return Response({"error": "Invalid certificate data"}, status=status.HTTP_400_BAD_REQUEST)
                 Certificate.objects.create(education=education, **cert_data)
 
-        # Handle other sections
-        from .models import ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         for exp_data in data.get('experiences', []):
+            if not all([exp_data.get(k) for k in ['position_title', 'company', 'dates']]):
+                logger.error("Invalid experience data: %s", exp_data)
+                return Response({"error": "Invalid experience data"}, status=status.HTTP_400_BAD_REQUEST)
             ProfessionalExperience.objects.create(cv=cv, **exp_data)
+
         for comp_data in data.get('competencies', []):
+            if not comp_data.get('competency_type'):
+                logger.error("Invalid competency data: %s", comp_data)
+                return Response({"error": "Invalid competency data"}, status=status.HTTP_400_BAD_REQUEST)
             ProfessionalCompetency.objects.create(cv=cv, **comp_data)
+
         for proj_data in data.get('projects', []):
+            if not all([proj_data.get(k) for k in ['project_title', 'year']]):
+                logger.error("Invalid project data: %s", proj_data)
+                return Response({"error": "Invalid project data"}, status=status.HTTP_400_BAD_REQUEST)
             Project.objects.create(cv=cv, **proj_data)
+
         if 'technical_skills' in data:
-            TechnicalSkill.objects.create(cv=cv, **data['technical_skills'])
+            if not any([data['technical_skills'].get(k) for k in ['programming_languages', 'frameworks_databases', 'tools']]):
+                logger.error("Invalid technical skills data: %s", data['technical_skills'])
+                return Response({"error": "Invalid technical skills data"}, status=status.HTTP_400_BAD_REQUEST)
+            TechnicalSkill.objects.update_or_create(cv=cv, defaults=data['technical_skills'])
+
         for lang_data in data.get('languages', []):
+            if not lang_data.get('name'):
+                logger.error("Invalid language data: %s", lang_data)
+                return Response({"error": "Invalid language data"}, status=status.HTTP_400_BAD_REQUEST)
             Language.objects.create(cv=cv, **lang_data)
+
         for comm_data in data.get('community_involvements', []):
             CommunityInvolvement.objects.create(cv=cv, **comm_data)
+
         for award_data in data.get('awards', []):
+            if not all([award_data.get(k) for k in ['award_name', 'year']]):
+                logger.error("Invalid award data: %s", award_data)
+                return Response({"error": "Invalid award data"}, status=status.HTTP_400_BAD_REQUEST)
             Award.objects.create(cv=cv, **award_data)
+
         for ref_data in data.get('references', []):
+            if not all([ref_data.get(k) for k in ['reference_name', 'email']]):
+                logger.error("Invalid reference data: %s", ref_data)
+                return Response({"error": "Invalid reference data"}, status=status.HTTP_400_BAD_REQUEST)
             Reference.objects.create(cv=cv, **ref_data)
 
         logger.info("Generating PDF for cv_id: %s", cv.id)
         pdf_path = generate_pdf(cv)
         logger.info("PDF generated at: %s", pdf_path)
 
-        return Response({"message": "CV submitted", "cv_id": cv.id, "pdf_url": pdf_path}, status=status.HTTP_201_CREATED)
+        return Response({
+            "message": f"CV {'created' if created else 'updated'} successfully",
+            "cv_id": cv.id,
+            "pdf_url": pdf_path,
+            "submitted_at": cv.submitted_at.isoformat()
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
 class CVPDFView(APIView):
     def get(self, request, cv_id):
         logger.info("CVPDFView.get called for cv_id: %s", cv_id)
-        # Lazy import to avoid circular dependency
         from .models import CVSubmission
         try:
             cv = CVSubmission.objects.get(id=cv_id)
@@ -181,7 +235,7 @@ class CVPDFView(APIView):
             if not os.path.exists(pdf_path):
                 logger.error("PDF not found for cv_id: %s", cv_id)
                 return Response({"error": "PDF not generated yet"}, status=status.HTTP_404_NOT_FOUND)
-            return FileResponse(open(pdf_path, 'rb'), as_attachment=True, filename=f'cv_{cv.external_id}.pdf')
+            return FileResponse(open(pdf_path, 'rb'), as_attachment=True, filename=f'cv_{cv.name}_{cv.surname}.pdf')
         except CVSubmission.DoesNotExist:
             logger.error("CV not found for cv_id: %s", cv_id)
             return Response({"error": "CV not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -191,12 +245,14 @@ class CVEditView(APIView):
 
     def get(self, request, cv_id):
         logger.info("CVEditView.get called for cv_id: %s", cv_id)
-        # Lazy import to avoid circular dependency
         from .models import CVSubmission, Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         try:
             cv = CVSubmission.objects.get(id=cv_id)
             data = {
-                "external_id": cv.external_id,
+                "name": cv.name,
+                "surname": cv.surname,
+                "email": cv.email,
+                "major": cv.major,
                 "educations": [
                     {
                         "id": edu.id,
@@ -238,11 +294,11 @@ class CVEditView(APIView):
                     } for proj in cv.projects.all()
                 ],
                 "technical_skills": {
-                    "id": technical_skills.id if technical_skills else None,
+                    "id": technical_skills.id if (technical_skills := cv.technical_skills.first()) else None,
                     "programming_languages": technical_skills.programming_languages if technical_skills else "",
                     "frameworks_databases": technical_skills.frameworks_databases if technical_skills else "",
                     "tools": technical_skills.tools if technical_skills else ""
-                } if (technical_skills := cv.technical_skills.first()) else {},
+                },
                 "languages": [
                     {"id": lang.id, "name": lang.name} for lang in cv.languages.all()
                 ],
@@ -281,17 +337,17 @@ class CVEditView(APIView):
 
     def put(self, request, cv_id):
         logger.info("CVEditView.put called for cv_id: %s with data: %s", cv_id, request.data)
-        # Lazy import to avoid circular dependency
         from .models import CVSubmission, Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         try:
             cv = CVSubmission.objects.get(id=cv_id)
             data = request.data
-            external_id = data.get('external_id', cv.external_id)
-            if external_id != cv.external_id:
-                cv.external_id = external_id
-                cv.save()
+            cv.name = data.get('name', cv.name)
+            cv.surname = data.get('surname', cv.surname)
+            cv.email = data.get('email', cv.email)
+            cv.major = data.get('major', cv.major)
+            cv.save()
 
-            # Handle partial updates for educations
+            # Update or create educations and certificates
             for edu_data in data.get('educations', []):
                 edu_id = edu_data.get('id')
                 if edu_id:
@@ -300,7 +356,8 @@ class CVEditView(APIView):
                         if key != 'id' and key != 'certificates':
                             setattr(education, key, value)
                     education.save()
-                    # Update or create certificates
+                    # Delete existing certificates and recreate
+                    education.certificates.all().delete()
                     for cert_data in edu_data.get('certificates', []):
                         cert_id = cert_data.get('id')
                         if cert_id:
@@ -316,7 +373,7 @@ class CVEditView(APIView):
                     for cert_data in edu_data.get('certificates', []):
                         Certificate.objects.create(education=education, **{k: v for k, v in cert_data.items() if k != 'id'})
 
-            # Handle partial updates for other sections (similar pattern)
+            # Update or create other related models similarly
             for exp_data in data.get('experiences', []):
                 exp_id = exp_data.get('id')
                 if exp_id:
@@ -360,7 +417,7 @@ class CVEditView(APIView):
                             setattr(tech, key, value)
                     tech.save()
                 else:
-                    TechnicalSkill.objects.create(cv=cv, **{k: v for k, v in tech_data.items() if k != 'id'})
+                    TechnicalSkill.objects.update_or_create(cv=cv, defaults=tech_data)
 
             for lang_data in data.get('languages', []):
                 lang_id = lang_data.get('id')
@@ -421,12 +478,15 @@ class CVEditView(APIView):
 class CVDetailView(APIView):
     def get(self, request, cv_id):
         logger.info("CVDetailView.get called for cv_id: %s", cv_id)
-        # Lazy import to avoid circular dependency
         from .models import CVSubmission, Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         try:
             cv = CVSubmission.objects.get(id=cv_id)
+            technical_skills = cv.technical_skills.first()
             data = {
-                "external_id": cv.external_id,
+                "name": cv.name,
+                "surname": cv.surname,
+                "email": cv.email,
+                "major": cv.major,
                 "submitted_at": cv.submitted_at.isoformat(),
                 "educations": [
                     {
@@ -464,10 +524,10 @@ class CVDetailView(APIView):
                     } for proj in cv.projects.all()
                 ],
                 "technical_skills": {
-                    "programming_languages": cv.technical_skills.first().programming_languages if cv.technical_skills.first() else "",
-                    "frameworks_databases": cv.technical_skills.first().frameworks_databases if cv.technical_skills.first() else "",
-                    "tools": cv.technical_skills.first().tools if cv.technical_skills.first() else ""
-                } if cv.technical_skills.first() else {},
+                    "programming_languages": technical_skills.programming_languages if technical_skills else "",
+                    "frameworks_databases": technical_skills.frameworks_databases if technical_skills else "",
+                    "tools": technical_skills.tools if technical_skills else ""
+                },
                 "languages": [{"name": lang.name} for lang in cv.languages.all()],
                 "community_involvements": [
                     {
@@ -507,7 +567,10 @@ class CVListView(APIView):
         serialized_data = [
             {
                 'id': cv.id,
-                'external_id': cv.external_id,
+                'name': cv.name,
+                'surname': cv.surname,
+                'email': cv.email,
+                'major': cv.major,
                 'submitted_at': cv.submitted_at,
                 'technical_skills': [
                     {
@@ -522,3 +585,10 @@ class CVListView(APIView):
             for cv in cvs
         ]
         return Response(serialized_data, status=status.HTTP_200_OK)
+
+
+def cv_cards_view(request):
+    from .models import CVSubmission
+    cvs = CVSubmission.objects.all().order_by('-submitted_at')  # Use submitted_at instead of created_at
+    print(f"Number of CVs: {cvs.count()}")  # Debug output
+    return render(request, 'cv/cv-cards.html', {'cvs': cvs})  # Render the template with CV data

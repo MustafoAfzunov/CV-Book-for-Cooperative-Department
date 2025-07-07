@@ -592,3 +592,24 @@ def cv_cards_view(request):
     cvs = CVSubmission.objects.all().order_by('-submitted_at')  # Use submitted_at instead of created_at
     print(f"Number of CVs: {cvs.count()}")  # Debug output
     return render(request, 'cv/cv-cards.html', {'cvs': cvs})  # Render the template with CV data
+
+
+def cv_detail_view(request, cv_id):
+    from .models import CVSubmission, Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
+    try:
+        cv = CVSubmission.objects.get(id=cv_id)
+        context = {
+            'cv': cv,
+            'educations': cv.educations.all(),
+            'experiences': cv.experiences.all(),
+            'competencies': cv.competencies.all(),
+            'projects': cv.projects.all(),
+            'technical_skills': cv.technical_skills.first(),
+            'languages': cv.languages.all(),
+            'community_involvements': cv.community_involvements.all(),
+            'awards': cv.awards.all(),
+            'references': cv.references.all(),
+        }
+        return render(request, 'cv/cv-detail.html', context)
+    except CVSubmission.DoesNotExist:
+        return render(request, 'cv/cv-cards.html', {'cvs': CVSubmission.objects.all().order_by('-submitted_at'), 'error': 'CV not found'})

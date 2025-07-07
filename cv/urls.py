@@ -11,4 +11,5 @@ urlpatterns = [
     path('<int:cv_id>/download/', CVPDFView.as_view(), name='cv-download'),
     path('<int:cv_id>/edit/', CVEditView.as_view(), name='cv-edit'),
     path('create/', TemplateView.as_view(template_name='cv/cv-form.html'), name='cv-create'),
+    path('detail/<int:cv_id>/', views.cv_detail_view, name='cv_detail'),  # New detail view URL
 ]

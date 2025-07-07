@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Detail - {{ cv.name }} {{ cv.surname }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin-bottom: 20px; }
+        .section h2 { color: #333; }
+        .item { margin-left: 20px; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% else %}
+        <h1>CV Detail - {{ cv.name }} {{ cv.surname }}</h1>
+        <p><strong>Email:</strong> {{ cv.email }}</p>
+        <p><strong>Major:</strong> {{ cv.major|default:"N/A" }}</p>
+        <p><strong>Submitted:</strong> {{ cv.submitted_at|date:"F d, Y" }}</p>
+
+        {% if educations %}
+            <div class="section">
+                <h2>Education</h2>
+                {% for edu in educations %}
+                    <div class="item">
+                        <p>{{ edu.degree_title|default:"N/A" }} at {{ edu.university|default:"N/A" }}, Expected: {{ edu.expected_graduation|default:"N/A" }}</p>
+                        {% for cert in edu.certificates.all %}
+                            <p class="item">- {{ cert.certificate_title|default:"N/A" }} ({{ cert.year|default:"N/A" }}, {{ cert.organization|default:"N/A" }})</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if experiences %}
+            <div class="section">
+                <h2>Professional Experience</h2>
+                {% for exp in experiences %}
+                    <div class="item">
+                        <p>{{ exp.position_title|default:"N/A" }} at {{ exp.company|default:"N/A" }} ({{ exp.dates|default:"N/A" }})</p>
+                        <p>{{ exp.accomplishments|default:"N/A" }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if competencies %}
+            <div class="section">
+                <h2>Competencies</h2>
+                {% for comp in competencies %}
+                    <div class="item">
+                        <p>{{ comp.competency_type|default:"N/A" }}: {{ comp.key_accomplishments|default:"N/A" }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if projects %}
+            <div class="section">
+                <h2>Projects</h2>
+                {% for proj in projects %}
+                    <div class="item">
+                        <p>{{ proj.project_title|default:"N/A" }} ({{ proj.year|default:"N/A" }}): {{ proj.summary|default:"N/A" }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if technical_skills %}
+            <div class="section">
+                <h2>Technical Skills</h2>
+                <p>Languages: {{ technical_skills.programming_languages|default:"N/A" }}</p>
+                <p>Frameworks: {{ technical_skills.frameworks_databases|default:"N/A" }}</p>
+                <p>Tools: {{ technical_skills.tools|default:"N/A" }}</p>
+            </div>
+        {% endif %}
+
+        {% if languages %}
+            <div class="section">
+                <h2>Languages</h2>
+                {% for lang in languages %}
+                    <div class="item">
+                        <p>{{ lang.name|default:"N/A" }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if community_involvements %}
+            <div class="section">
+                <h2>Community Involvement</h2>
+                {% for ci in community_involvements %}
+                    <div class="item">
+                        <p>{{ ci.position_title|default:"N/A" }} at {{ ci.organization|default:"N/A" }} ({{ ci.dates|default:"N/A" }}): {{ ci.achievements|default:"N/A" }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if awards %}
+            <div class="section">
+                <h2>Awards</h2>
+                {% for award in awards %}
+                    <div class="item">
+                        <p>{{ award.award_name|default:"N/A" }} ({{ award.year|default:"N/A" }}): {{ award.short_description|default:"N/A" }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if references %}
+            <div class="section">
+                <h2>References</h2>
+                {% for ref in references %}
+                    <div class="item">
+                        <p>{{ ref.reference_name|default:"N/A" }} ({{ ref.position|default:"N/A" }}), {{ ref.email|default:"N/A" }}, {{ ref.phone|default:"N/A" }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+    <a href="{% url 'cv_cards' %}">Back to CV Cards</a>
+</body>
+</html>

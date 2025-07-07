@@ -19,6 +19,8 @@
             width: 250px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-align: center;
+            text-decoration: none; /* Remove underline from links */
+            color: inherit; /* Inherit text color */
         }
         .card h3 {
             margin: 0 0 10px;
@@ -28,6 +30,10 @@
             margin: 5px 0;
             color: #666;
         }
+        .card:hover {
+            background: #f0f0f0; /* Optional: Highlight on hover */
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -35,11 +41,11 @@
     <div class="card-container">
         {% if cvs %}
             {% for cv in cvs %}
-                <div class="card">
+                <a href="{% url 'cv_detail' cv.id %}" class="card">
                     <h3>{{ cv.name }} {{ cv.surname }}</h3>
                     <p><strong>Major:</strong> {{ cv.major|default:"N/A" }}</p>
-                    <p><small>Submitted: {{ cv.submitted_at|date:"F d, Y" }}</small></p> <!-- Changed to submitted_at -->
-                </div>
+                    <p><small>Submitted: {{ cv.submitted_at|date:"F d, Y" }}</small></p>
+                </a>
             {% endfor %}
         {% else %}
             <p>No CVs available.</p>

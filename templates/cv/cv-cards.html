@@ -1,55 +1,311 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV Cards</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UCA CV Book</title>
+    <link rel="stylesheet" href="styles_student_cards.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
     <style>
-        .card-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            padding: 20px;
-        }
-        .card {
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            width: 250px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
-            text-decoration: none; /* Remove underline from links */
-            color: inherit; /* Inherit text color */
-        }
-        .card h3 {
-            margin: 0 0 10px;
-            color: #333;
-        }
-        .card p {
-            margin: 5px 0;
-            color: #666;
-        }
-        .card:hover {
-            background: #f0f0f0; /* Optional: Highlight on hover */
-            cursor: pointer;
-        }
+      /* Reset & Base Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(to bottom, #e6f0ff, #ffffff);
+        color: #333333;
+        line-height: 1.6;
+      }
+
+      /* Header */
+      .header {
+        background-color: #6bb9e0;
+        padding: 20px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .header-title {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      .header-nav a {
+        color: #ffffff;
+        text-decoration: none;
+        margin-left: 20px;
+        font-size: 14px;
+        text-transform: uppercase;
+      }
+
+      .header-nav a:hover {
+        text-decoration: underline;
+      }
+
+      /* Filter Section */
+      .filter-section {
+        background: linear-gradient(to bottom, #e6f0ff, #ffffff);
+        padding: 30px 40px;
+        margin: 0;
+        border-radius: 0;
+      }
+
+      .filter-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-bottom: 20px;
+      }
+
+      .filter-tab {
+        color: #333333;
+        text-transform: uppercase;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: color 0.3s;
+      }
+
+      .filter-tab.active {
+        color: #73afe4;
+      }
+
+      .filter-tab:hover {
+        color: #73afe4;
+      }
+
+      .filter-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .filter-dropdowns {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .dropdown,
+      .search-bar {
+        border: 2px solid #6bb9e0;
+        background-color: #ffffff;
+        padding: 10px 15px;
+        border-radius: 6px;
+        color: #333333;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+      }
+
+      .search-bar i {
+        color: #4b5563;
+        font-size: 16px;
+      }
+
+      .search-bar input {
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #333333;
+        font-size: 14px;
+        width: 150px;
+      }
+
+      /* Main Content Area */
+      .main-content {
+        padding: 40px;
+      }
+
+      .main-heading {
+        font-size: 36px;
+        font-weight: bold;
+        color: #333333;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      /* CARD CONTAINER FROM CURRENT CODE */
+      .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 20px;
+      }
+
+      /* CARD STYLE FROM CURRENT CODE, WITH VISUAL UPGRADE */
+      .student-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .student-card:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        background-color: #f8fbff;
+        cursor: pointer;
+      }
+
+      .student-name {
+        font-size: 18px;
+        font-weight: bold;
+        color: #1e3a8a;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+
+      .student-major {
+        font-size: 14px;
+        color: #555555;
+        font-style: italic;
+      }
+
+      .submitted-date small {
+        font-size: 12px;
+        color: #888888;
+      }
+
+      /* Chat Icon */
+      .chat-icon {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #3a7ccf;
+        color: #ffffff;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .chat-icon:hover {
+        background-color: #2e639f;
+      }
     </style>
-</head>
-<body>
-    <h1>CV Cards</h1>
-    <div class="card-container">
-        {% if cvs %}
-            {% for cv in cvs %}
-                <a href="{% url 'cv_detail' cv.id %}" class="card">
-                    <h3>{{ cv.name }} {{ cv.surname }}</h3>
-                    <p><strong>Major:</strong> {{ cv.major|default:"N/A" }}</p>
-                    <p><small>Submitted: {{ cv.submitted_at|date:"F d, Y" }}</small></p>
-                </a>
-            {% endfor %}
-        {% else %}
-            <p>No CVs available.</p>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-title">UCA University of Central Asia</div>
+      <nav class="header-nav">
+        <a href="#">Home Page</a>
+        <a href="#">About Us</a>
+        <a href="#">Majors</a>
+      </nav>
+    </header>
+
+    <!-- Filter Section -->
+    <section class="filter-section">
+      <div class="filter-tabs">
+        <span class="filter-tab active" data-filter="all">ALL</span>
+        <span class="filter-tab" data-filter="computer-science"
+          >COMPUTER SCIENCE</span
+        >
+        <span class="filter-tab" data-filter="communication-media"
+          >COMMUNICATION AND MEDIA</span
+        >
+        <span class="filter-tab" data-filter="earth-environment"
+          >EARTH AND ENVIRONMENTAL SCIENCES</span
+        >
+        <span class="filter-tab" data-filter="global-economics"
+          >GLOBAL ECONOMICS</span
+        >
+      </div>
+
+      <div class="filter-controls">
+        <div class="filter-dropdowns">
+          <select class="dropdown">
+            <option>COUNTRY</option>
+            <option>Kyrgyzstan</option>
+            <option>Tajikistan</option>
+          </select>
+          <select class="dropdown">
+            <option>LANGUAGE</option>
+            <option>English</option>
+            <option>Russian</option>
+          </select>
+          <select class="dropdown">
+            <option>TECHNICAL SKILLS</option>
+            <option>Programming</option>
+            <option>Data Analysis</option>
+          </select>
+          <select class="dropdown">
+            <option>NON-TECHNICAL SKILLS</option>
+            <option>Communication</option>
+            <option>Teamwork</option>
+          </select>
+          <select class="dropdown">
+            <option>A-Z</option>
+            <option>Z-A</option>
+          </select>
+        </div>
+        <div class="filter-search-sort">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <h1 class="main-heading">Student Profiles</h1>
+      <div class="student-grid">
+        {% if cvs %} {% for cv in cvs %}
+        <a
+          href="{% url 'cv_detail' cv.id %}"
+          class="student-card"
+          data-category="{{ cv.major|slugify }}"
+        >
+          <div class="student-name">{{ cv.name }} {{ cv.surname }}</div>
+          <div class="student-major">{{ cv.major|default:"N/A" }}</div>
+          <div class="submitted-date">
+            <small>Submitted: {{ cv.submitted_at|date:"F d, Y" }}</small>
+          </div>
+        </a>
+        {% endfor %} {% else %}
+        <p>No CVs available.</p>
         {% endif %}
+      </div>
+    </main>
+
+    <!-- Chat Icon -->
+    <div class="chat-icon">
+      <i class="fas fa-comment"></i>
     </div>
-</body>
+
+    <script src="cv-cards.js"></script>
+  </body>
 </html>

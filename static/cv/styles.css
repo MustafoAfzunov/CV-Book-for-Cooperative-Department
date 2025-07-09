@@ -147,13 +147,24 @@ textarea {
     background-color: #3498db;
     color: white;
     border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    font-size: 18px;
+    border-radius: 4px;       /* normal rounded corners */
+    padding: 10px 20px;       /* similar padding as other buttons */
+    font-size: 14px;          /* smaller font size like others */
     cursor: pointer;
     margin-top: 10px;
+    width: auto;              /* remove fixed width */
+    height: auto;             /* remove fixed height */
+    display: inline-block;    /* ensures button respects padding */
 }
+
+.remove-btn {
+    background-color: #e74c3c; /* keep red for remove */
+}
+
+.add-btn:hover, .remove-btn:hover {
+    opacity: 0.8;
+}
+
 
 .remove-btn {
     background-color: #e74c3c;

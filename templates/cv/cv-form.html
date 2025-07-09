@@ -1,657 +1,1425 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CV Builder Form</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'cv/styles.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'cv/styles.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}" />
+  </head>
+  <body>
     <div class="modal" id="cvFormModal">
-        <div class="modal-content">
-            <h2>CV Builder Form</h2>
-            
-            <div class="progress-bar" id="progressBar">
-                <div class="progress-step active">1</div>
-                <div class="progress-step">2</div>
-                <div class="progress-step">3</div>
-                <div class="progress-step">4</div>
-                <div class="progress-step">5</div>
-                <div class="progress-step">6</div>
-                <div class="progress-step">7</div>
-                <div class="progress-step">8</div>
-                <div class="progress-step">9</div>
-                <div class="progress-step">10</div>
-            </div>
-            
-            <div class="progress-text">
-                Step <span id="currentStep">1</span> of <span id="totalSteps">10</span>
-            </div>
-            
-            <form id="cvForm" method="post">
-                {% csrf_token %}
-                <!-- STEP 1: PERSONAL INFORMATION -->
-                <div class="form-step active" id="step-1">
-                    <h3>Personal Information</h3>
-                    <div class="row">
-                        <div class="form-group">
-                            <label for="name">Name *</label>
-                            <div class="input-group">
-                                <i class="fas fa-user"></i>
-                                <input type="text" id="name" name="name" required placeholder="Enter your name">
-                            </div>
-                            <div class="error-message">This field is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="surname">Surname *</label>
-                            <div class="input-group">
-                                <i class="fas fa-user"></i>
-                                <input type="text" id="surname" name="surname" required placeholder="Enter your surname">
-                            </div>
-                            <div class="error-message">This field is required</div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group">
-                            <label for="email">Email *</label>
-                            <div class="input-group">
-                                <i class="fas fa-envelope"></i>
-                                <input type="email" id="email" name="email" required placeholder="Enter your email">
-                            </div>
-                            <div class="error-message">This field is required</div>
-                        </div>
-                        <div class="form-group">
-                            <label for="major">Major *</label>
-                            <div class="input-group">
-                                <i class="fas fa-graduation-cap"></i>
-                                <select id="major" name="major" required>
-                                    <option value="">Select Major</option>
-                                    <option value="Computer Science">Computer Science</option>
-                                    <option value="Communication and Media">Communication and Media</option>
-                                    <option value="Earth and Environmental Sciences">Earth and Environmental Sciences</option>
-                                    <option value="Global Economics">Global Economics</option>
-                                </select>
-                            </div>
-                            <div class="error-message">This field is required</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- STEP 2: EDUCATION -->
-                <div class="form-step" id="step-2" style="display:none;">
-                    <h3>Education</h3>
-                    <div id="educationContainer">
-                        <div class="education-entry" id="education-1">
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="degreeTitle1">Degree Title *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-graduation-cap"></i>
-                                        <input type="text" id="degreeTitle1" name="degreeTitle1" required placeholder="Enter your degree title">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="university1">University *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-university"></i>
-                                        <input type="text" id="university1" name="university1" required placeholder="Enter your university">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="expectedGraduation1">Expected Graduation *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-calendar"></i>
-                                        <input type="text" id="expectedGraduation1" name="expectedGraduation1" required placeholder="e.g., 2025 or June 2025">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                            <div id="certificateContainer1"></div>
-                            <button type="button" class="add-btn" onclick="addCertificate(1)">+ Add Certificate</button>
-                            <button type="button" class="remove-btn" onclick="removeEducation(this)" style="display:none;">- Remove</button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-btn" onclick="addEducation()">+ Add Another Education</button>
-                </div>
-                
-                <!-- STEP 3: PROFESSIONAL EXPERIENCE -->
-                <div class="form-step" id="step-3" style="display:none;">
-                    <h3>Professional Experience</h3>
-                    <div id="experienceContainer">
-                        <div class="experience-entry" id="experience-1">
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="positionTitle1">Position Title *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-briefcase"></i>
-                                        <input type="text" id="positionTitle1" name="positionTitle1" required placeholder="Enter your position">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="company1">Company *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-building"></i>
-                                        <input type="text" id="company1" name="company1" required placeholder="Enter your company">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="dates1">Dates *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-calendar"></i>
-                                        <input type="text" id="dates1" name="dates1" required placeholder="e.g., 2023-2024">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="accomplishments1">Accomplishments</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-list"></i>
-                                        <textarea id="accomplishments1" name="accomplishments1" placeholder="List your accomplishments"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="remove-btn" onclick="removeExperience(this)" style="display:none;">- Remove</button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-btn" onclick="addExperience()">+ Add Another Experience</button>
-                </div>
-                
-                <!-- STEP 4: PROFESSIONAL COMPETENCIES -->
-                <div class="form-step" id="step-4" style="display:none;">
-                    <h3>Professional Competencies</h3>
-                    <div id="competencyContainer">
-                        <div class="competency-entry" id="competency-1">
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="competencyType1">Competency Type *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-star"></i>
-                                        <input type="text" id="competencyType1" name="competencyType1" required placeholder="e.g., Leadership">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="keyAccomplishments1">Key Accomplishments</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-list"></i>
-                                        <textarea id="keyAccomplishments1" name="keyAccomplishments1" placeholder="Describe your accomplishments"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="remove-btn" onclick="removeCompetency(this)" style="display:none;">- Remove</button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-btn" onclick="addCompetency()">+ Add Another Competency</button>
-                </div>
-                
-                <!-- STEP 5: PROJECTS -->
-                <div class="form-step" id="step-5" style="display:none;">
-                    <h3>Projects</h3>
-                    <div id="projectContainer">
-                        <div class="project-entry" id="project-1">
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="projectTitle1">Project Title *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-project-diagram"></i>
-                                        <input type="text" id="projectTitle1" name="projectTitle1" required placeholder="Enter project title">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="year1">Year *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-calendar"></i>
-                                        <input type="text" id="year1" name="year1" required placeholder="e.g., 2023">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="summary1">Summary</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-list"></i>
-                                        <textarea id="summary1" name="summary1" placeholder="Brief project summary"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="remove-btn" onclick="removeProject(this)" style="display:none;">- Remove</button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-btn" onclick="addProject()">+ Add Another Project</button>
-                </div>
-                
-                <!-- STEP 6: TECHNICAL SKILLS -->
-                <div class="form-step" id="step-6" style="display:none;">
-                    <h3>Technical Skills</h3>
-                    <div class="row">
-                        <div class="form-group">
-                            <label for="programmingLanguages">Programming Languages</label>
-                            <div class="input-group">
-                                <i class="fas fa-code"></i>
-                                <input type="text" id="programmingLanguages" name="programmingLanguages" placeholder="e.g., Python, Java">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="frameworksDatabases">Frameworks/Databases</label>
-                            <div class="input-group">
-                                <i class="fas fa-database"></i>
-                                <input type="text" id="frameworksDatabases" name="frameworksDatabases" placeholder="e.g., Django, MySQL">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group">
-                            <label for="tools">Tools</label>
-                            <div class="input-group">
-                                <i class="fas fa-tools"></i>
-                                <input type="text" id="tools" name="tools" placeholder="e.g., Git, Docker">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- STEP 7: SPOKEN LANGUAGES -->
-                <div class="form-step" id="step-7" style="display:none;">
-                    <h3>Spoken Languages</h3>
-                    <div id="languageContainer">
-                        <div class="language-entry" id="language-1">
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="languageName1">Language Name *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-language"></i>
-                                        <input type="text" id="languageName1" name="languageName1" required placeholder="e.g., English">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                            <button type="button" class="remove-btn" onclick="removeLanguage(this)" style="display:none;">- Remove</button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-btn" onclick="addLanguage()">+ Add Another Language</button>
-                </div>
-                
-                <!-- STEP 8: COMMUNITY INVOLVEMENT -->
-                <div class="form-step" id="step-8" style="display:none;">
-                    <h3>Community Involvement</h3>
-                    <div id="communityContainer">
-                        <div class="community-entry" id="community-1">
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="positionTitle1">Position Title</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-users"></i>
-                                        <input type="text" id="positionTitle1" name="positionTitle1" placeholder="e.g., Volunteer">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="organization1">Organization</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-building"></i>
-                                        <input type="text" id="organization1" name="organization1" placeholder="e.g., Red Cross">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="dates1">Dates</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-calendar"></i>
-                                        <input type="text" id="dates1" name="dates1" placeholder="e.g., 2023-2024">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="achievements1">Achievements</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-list"></i>
-                                        <textarea id="achievements1" name="achievements1" placeholder="Describe achievements"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="remove-btn" onclick="removeCommunity(this)" style="display:none;">- Remove</button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-btn" onclick="addCommunity()">+ Add Another Involvement</button>
-                </div>
-                
-                <!-- STEP 9: AWARDS -->
-                <div class="form-step" id="step-9" style="display:none;">
-                    <h3>Awards</h3>
-                    <div id="awardContainer">
-                        <div class="award-entry" id="award-1">
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="awardName1">Award Name *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-trophy"></i>
-                                        <input type="text" id="awardName1" name="awardName1" required placeholder="Enter award name">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="year1">Year *</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-calendar"></i>
-                                        <input type="text" id="year1" name="year1" required placeholder="e.g., 2023">
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="shortDescription1">Short Description</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-list"></i>
-                                        <textarea id="shortDescription1" name="shortDescription1" placeholder="Brief description"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="remove-btn" onclick="removeAward(this)" style="display:none;">- Remove</button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-btn" onclick="addAward()">+ Add Another Award</button>
-                </div>
-                
-                <!-- STEP 10: REVIEW AND SUBMIT -->
-                <div class="form-step" id="step-10" style="display:none;">
-                    <h3>Review Your CV & Submit</h3>
-                    <div id="reviewInfo" class="review-section">
-                        <!-- Review content will be dynamically inserted here -->
-                    </div>
-                </div>
-                
-                <div class="progress-text">
-                    Step <span id="currentStep">1</span> of <span id="totalSteps">10</span>
-                </div>
-                <div class="form-navigation">
-                    <button type="button" class="save-draft-btn" id="saveDraftBtn">Save Draft</button>
-                    <button type="button" class="clear-form-btn" id="clearFormBtn">Clear Form</button>
-                    <button type="button" id="prevBtn">Previous</button>
-                    <button type="button" id="nextBtn">Next</button>
-                    <button type="submit" id="submitBtn">Submit CV</button>
-                </div>
-            </form>
+      <div class="modal-content">
+        <h2>CV Builder Form</h2>
+
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-step active">1</div>
+          <div class="progress-step">2</div>
+          <div class="progress-step">3</div>
+          <div class="progress-step">4</div>
+          <div class="progress-step">5</div>
+          <div class="progress-step">6</div>
+          <div class="progress-step">7</div>
+          <div class="progress-step">8</div>
+          <div class="progress-step">9</div>
+          <div class="progress-step">10</div>
         </div>
+
+        <div class="progress-text">
+          Step <span id="currentStep">1</span> of
+          <span id="totalSteps">10</span>
+        </div>
+
+        <form id="cvForm" method="post">
+          {% csrf_token %}
+          <!-- STEP 1: PERSONAL INFORMATION -->
+          <div class="form-step active" id="step-1">
+            <h3>Personal Information</h3>
+            <div class="row">
+              <div class="form-group">
+                <label for="name">Name *</label>
+                <div class="input-group">
+                  <i class="fas fa-user"></i>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    placeholder="Enter your name"
+                  />
+                </div>
+                <div class="error-message">This field is required</div>
+              </div>
+              <div class="form-group">
+                <label for="surname">Surname *</label>
+                <div class="input-group">
+                  <i class="fas fa-user"></i>
+                  <input
+                    type="text"
+                    id="surname"
+                    name="surname"
+                    required
+                    placeholder="Enter your surname"
+                  />
+                </div>
+                <div class="error-message">This field is required</div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group">
+                <label for="email">Email *</label>
+                <div class="input-group">
+                  <i class="fas fa-envelope"></i>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    placeholder="Enter your email"
+                  />
+                </div>
+                <div class="error-message">This field is required</div>
+              </div>
+              <div class="form-group">
+                <label for="major">Major *</label>
+                <div class="input-group">
+                  <i class="fas fa-graduation-cap"></i>
+                  <select id="major" name="major" required>
+                    <option value="">Select Major</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Communication and Media">
+                      Communication and Media
+                    </option>
+                    <option value="Earth and Environmental Sciences">
+                      Earth and Environmental Sciences
+                    </option>
+                    <option value="Global Economics">Global Economics</option>
+                  </select>
+                </div>
+                <div class="error-message">This field is required</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: EDUCATION -->
+          <!-- STEP 2: EDUCATION -->
+          <div class="form-step" id="step-2" style="display: none">
+            <h3>Education</h3>
+            <div id="educationContainer">
+              <div class="education-entry">
+                <div class="row">
+                  <div class="form-group">
+                    <label for="degreeTitle1">Degree Title *</label>
+                    <div class="input-group">
+                      <i class="fas fa-graduation-cap"></i>
+                      <input
+                        type="text"
+                        id="degreeTitle1"
+                        name="degreeTitle1"
+                        required
+                        placeholder="Enter your degree title"
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="university1">University, City, Country *</label>
+                    <div class="input-group">
+                      <i class="fas fa-university"></i>
+                      <input
+                        type="text"
+                        id="university1"
+                        name="university1"
+                        required
+                        placeholder="Enter your university"
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="form-group">
+                    <label for="eduStartDate1">Start Date *</label>
+                    <div class="input-group">
+                      <i class="fas fa-calendar"></i>
+                      <input
+                        type="date"
+                        id="eduStartDate1"
+                        name="eduStartDate1"
+                        required
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="eduEndDate1">End Date *</label>
+                    <div class="input-group">
+                      <i class="fas fa-calendar"></i>
+                      <input
+                        type="date"
+                        id="eduEndDate1"
+                        name="eduEndDate1"
+                        required
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="form-group">
+                    <label for="gpa1">GPA (Optional)</label>
+                    <div class="input-group">
+                      <i class="fas fa-chart-line"></i>
+                      <input
+                        type="text"
+                        id="gpa1"
+                        name="gpa1"
+                        placeholder="e.g., 3.8/4.0"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="honours1">Honours (Optional)</label>
+                    <div class="input-group">
+                      <i class="fas fa-award"></i>
+                      <input
+                        type="text"
+                        id="honours1"
+                        name="honours1"
+                        placeholder="Enter your honours"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="form-group">
+                    <label for="courses1">Relevant Courses (Optional)</label>
+                    <div class="input-group">
+                      <i class="fas fa-book"></i>
+                      <textarea
+                        id="courses1"
+                        name="courses1"
+                        placeholder="Enter your relevant courses"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="remove-btn"
+                  onclick="removeEducation(this)"
+                  style="display: none"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <button type="button" class="add-btn" onclick="addEducation()">
+              + Add Another Education
+            </button>
+
+            <h4>Certificates</h4>
+            <div id="certificatesContainer">
+              <div class="certificate-entry">
+                <div class="row">
+                  <div class="form-group">
+                    <label for="certificateTitle1">Certificate Title</label>
+                    <div class="input-group">
+                      <i class="fas fa-certificate"></i>
+                      <input
+                        type="text"
+                        id="certificateTitle1"
+                        name="certificateTitle1"
+                        placeholder="Enter certificate title"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="certificateOrg1">Organization & Location</label>
+                    <div class="input-group">
+                      <i class="fas fa-building"></i>
+                      <input
+                        type="text"
+                        id="certificateOrg1"
+                        name="certificateOrg1"
+                        placeholder="Enter organization & location"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="form-group">
+                    <label for="certDate1">Date Obtained</label>
+                    <div class="input-group">
+                      <i class="fas fa-calendar"></i>
+                      <input type="date" id="certDate1" name="certDate1" />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="remove-btn"
+                  onclick="removeCertificate(this)"
+                  style="display: none"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <button type="button" class="add-btn" onclick="addCertificate()">
+              + Add Certificate
+            </button>
+          </div>
+
+          <!-- STEP 3: PROFESSIONAL EXPERIENCE -->
+          <div class="form-step" id="step-3">
+            <h3>Professional Experience</h3>
+            <div id="experienceContainer">
+              <div class="experience-entry">
+                <div class="row">
+                  <div class="form-group">
+                    <label for="positionTitle1">Position Title *</label>
+                    <div class="input-group">
+                      <i class="fas fa-briefcase"></i>
+                      <input
+                        type="text"
+                        id="positionTitle1"
+                        name="positionTitle1"
+                        required
+                        placeholder="Enter your position title"
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="company1">Company *</label>
+                    <div class="input-group">
+                      <i class="fas fa-building"></i>
+                      <input
+                        type="text"
+                        id="company1"
+                        name="company1"
+                        required
+                        placeholder="Enter company name"
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="form-group">
+                    <label for="location1">Location *</label>
+                    <div class="input-group">
+                      <i class="fas fa-map-marker-alt"></i>
+                      <input
+                        type="text"
+                        id="location1"
+                        name="location1"
+                        required
+                        placeholder="City, Country"
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="employmentType1">Employment Type</label>
+                    <div class="input-group">
+                      <i class="fas fa-clock"></i>
+                      <select id="employmentType1" name="employmentType1">
+                        <option value="">Select type</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Internship">Internship</option>
+                        <option value="Freelance">Freelance</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="form-group">
+                    <label for="expStartDate1">Start Date *</label>
+                    <div class="input-group">
+                      <i class="fas fa-calendar"></i>
+                      <input
+                        type="date"
+                        id="expStartDate1"
+                        name="expStartDate1"
+                        required
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="expEndDate1">End Date</label>
+                    <div class="input-group">
+                      <i class="fas fa-calendar"></i>
+                      <input type="date" id="expEndDate1" name="expEndDate1" />
+                      <label class="checkbox-container">
+                        <input
+                          type="checkbox"
+                          id="currentJob1"
+                          name="currentJob1"
+                          onchange="toggleCurrentJob(1)"
+                        />
+                        <span class="checkmark"></span>
+                        Currently working here
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="jobDescription1">Job Description *</label>
+                  <div class="input-group">
+                    <i class="fas fa-align-left"></i>
+                    <textarea
+                      id="jobDescription1"
+                      name="jobDescription1"
+                      required
+                      placeholder="Describe your role and responsibilities"
+                    ></textarea>
+                  </div>
+                  <div class="error-message">This field is required</div>
+                </div>
+
+                <div class="accomplishments-section">
+                  <h5>Key Accomplishments</h5>
+                  <div class="form-group">
+                    <label for="expAccomplishment1_1">Accomplishment 1</label>
+                    <div class="input-group">
+                      <i class="fas fa-star"></i>
+                      <textarea
+                        id="expAccomplishment1_1"
+                        name="expAccomplishment1_1"
+                        placeholder="Enter your accomplishment"
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="expAccomplishment1_2">Accomplishment 2</label>
+                    <div class="input-group">
+                      <i class="fas fa-star"></i>
+                      <textarea
+                        id="expAccomplishment1_2"
+                        name="expAccomplishment1_2"
+                        placeholder="Enter your accomplishment"
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="expAccomplishment1_3">Accomplishment 3</label>
+                    <div class="input-group">
+                      <i class="fas fa-star"></i>
+                      <textarea
+                        id="expAccomplishment1_3"
+                        name="expAccomplishment1_3"
+                        placeholder="Enter your accomplishment"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="remove-btn"
+                  onclick="removeExperience(this)"
+                  style="display: none"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addExperience()">
+              + Add Another Experience
+            </button>
+          </div>
+
+          <!-- STEP 4: PROFESSIONAL COMPETENCIES -->
+          <div class="form-step" id="step-4">
+            <h3>Professional Competencies</h3>
+            <div class="row">
+              <div class="form-group">
+                <label for="competencyType">Competency Type</label>
+                <div class="input-group">
+                  <i class="fas fa-user-cog"></i>
+                  <input
+                    type="text"
+                    id="competencyType"
+                    name="competencyType"
+                    placeholder="e.g. Leadership, Communication, etc."
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group">
+                <label for="compAccomplishment1">Accomplishment 1</label>
+                <div class="input-group">
+                  <i class="fas fa-check-circle"></i>
+                  <textarea
+                    id="compAccomplishment1"
+                    name="compAccomplishment1"
+                    placeholder="Enter your accomplishment"
+                  ></textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="compAccomplishment2">Accomplishment 2</label>
+                <div class="input-group">
+                  <i class="fas fa-check-circle"></i>
+                  <textarea
+                    id="compAccomplishment2"
+                    name="compAccomplishment2"
+                    placeholder="Enter your accomplishment"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group">
+                <label for="compAccomplishment3">Accomplishment 3</label>
+                <div class="input-group">
+                  <i class="fas fa-check-circle"></i>
+                  <textarea
+                    id="compAccomplishment3"
+                    name="compAccomplishment3"
+                    placeholder="Enter your accomplishment"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 5: PROJECTS -->
+          <div class="form-step" id="step-5" style="display: none">
+            <h3>Projects</h3>
+            <div id="projectContainer">
+              <div class="project-entry" id="project-1">
+                <div class="row">
+                  <div class="form-group">
+                    <label for="projectTitle1">Project Title *</label>
+                    <div class="input-group">
+                      <i class="fas fa-project-diagram"></i>
+                      <input
+                        type="text"
+                        id="projectTitle1"
+                        name="projectTitle1"
+                        required
+                        placeholder="Enter project title"
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="year1">Year *</label>
+                    <div class="input-group">
+                      <i class="fas fa-calendar"></i>
+                      <input
+                        type="text"
+                        id="year1"
+                        name="year1"
+                        required
+                        placeholder="e.g., 2023"
+                      />
+                    </div>
+                    <div class="error-message">This field is required</div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="form-group">
+                    <label for="summary1">Summary</label>
+                    <div class="input-group">
+                      <i class="fas fa-list"></i>
+                      <textarea
+                        id="summary1"
+                        name="summary1"
+                        placeholder="Brief project summary"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="remove-btn"
+                  onclick="removeProject(this)"
+                  style="display: none"
+                >
+                  - Remove
+                </button>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addProject()">
+              + Add Another Project
+            </button>
+          </div>
+
+          <!-- STEP 6: TECHNICAL SKILLS -->
+          <div class="form-step" id="step-6">
+            <h3>Technical Skills</h3>
+            <div class="row">
+              <div class="form-group">
+                <label for="programmingLanguages">Programming Languages</label>
+                <div class="input-group">
+                  <i class="fas fa-code"></i>
+                  <input
+                    type="text"
+                    id="programmingLanguages"
+                    name="programmingLanguages"
+                    placeholder="e.g., Python, Java, C++"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="frameworksDatabases">Frameworks & Databases</label>
+                <div class="input-group">
+                  <i class="fas fa-database"></i>
+                  <input
+                    type="text"
+                    id="frameworksDatabases"
+                    name="frameworksDatabases"
+                    placeholder="e.g., React, Node.js, MySQL"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="tools">Tools</label>
+                <div class="input-group">
+                  <i class="fas fa-tools"></i>
+                  <input
+                    type="text"
+                    id="tools"
+                    name="tools"
+                    placeholder="e.g., Git, Docker, Figma"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="webDevelopment">Web Development</label>
+                <div class="input-group">
+                  <i class="fas fa-laptop-code"></i>
+                  <input
+                    type="text"
+                    id="webDevelopment"
+                    name="webDevelopment"
+                    placeholder="e.g., HTML, CSS, JavaScript"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="multimedia">Multimedia</label>
+                <div class="input-group">
+                  <i class="fas fa-photo-video"></i>
+                  <input
+                    type="text"
+                    id="multimedia"
+                    name="multimedia"
+                    placeholder="e.g., Adobe Photoshop"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="network">Network</label>
+                <div class="input-group">
+                  <i class="fas fa-network-wired"></i>
+                  <input
+                    type="text"
+                    id="network"
+                    name="network"
+                    placeholder="e.g., TCP/IP, Routing"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="form-group">
+                <label for="operatingSystems">Operating Systems</label>
+                <div class="input-group">
+                  <i class="fas fa-desktop"></i>
+                  <input
+                    type="text"
+                    id="operatingSystems"
+                    name="operatingSystems"
+                    placeholder="e.g., Windows, Linux, macOS"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 7: SPOKEN LANGUAGES -->
+          <div class="form-step" id="step-7" style="display: none">
+            <h3>Spoken Languages</h3>
+            <div id="languagesContainer">
+              <div class="language-entry">
+                <div class="row">
+                  <div class="form-group">
+                    <label for="language1">Language</label>
+                    <div class="input-group">
+                      <i class="fas fa-language"></i>
+                      <input
+                        type="text"
+                        id="language1"
+                        name="language1"
+                        placeholder="e.g., English"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="proficiency1">Proficiency Level</label>
+                    <div class="input-group">
+                      <i class="fas fa-star"></i>
+                      <select id="proficiency1" name="proficiency1">
+                        <option value="">Select level</option>
+                        <option value="Native">Native</option>
+                        <option value="Fluent">Fluent</option>
+                        <option value="Advanced">Advanced</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Basic">Basic</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="remove-btn"
+                  onclick="removeLanguage(this)"
+                  style="display: none"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addLanguage()">
+              + Add Language
+            </button>
+          </div>
+
+          <!-- STEP 8: COMMUNITY INVOLVEMENT -->
+          <div class="form-step" id="step-8" style="display: none">
+            <h3>Community Involvement</h3>
+            <div id="communityContainer">
+              <div class="community-entry">
+                <div class="row">
+                  <div class="form-group">
+                    <label for="communityPosition1">Position Title</label>
+                    <div class="input-group">
+                      <i class="fas fa-handshake"></i>
+                      <input
+                        type="text"
+                        id="communityPosition1"
+                        name="communityPosition1"
+                        placeholder="Enter position title"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="communityOrg1"
+                      >Organization, City, Country</label
+                    >
+                    <div class="input-group">
+                      <i class="fas fa-building"></i>
+                      <input
+                        type="text"
+                        id="communityOrg1"
+                        name="communityOrg1"
+                        placeholder="Enter organization details"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="form-group">
+                    <label for="communityStartDate1">Start Date</label>
+                    <div class="input-group">
+                      <i class="fas fa-calendar"></i>
+                      <input
+                        type="date"
+                        id="communityStartDate1"
+                        name="communityStartDate1"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="communityEndDate1">End Date</label>
+                    <div class="input-group">
+                      <i class="fas fa-calendar"></i>
+                      <input
+                        type="date"
+                        id="communityEndDate1"
+                        name="communityEndDate1"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="communityAccomplishment1">Accomplishment</label>
+                  <div class="input-group">
+                    <i class="fas fa-check-circle"></i>
+                    <textarea
+                      id="communityAccomplishment1"
+                      name="communityAccomplishment1"
+                      placeholder="Enter accomplishment"
+                    ></textarea>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="remove-btn"
+                  onclick="removeCommunity(this)"
+                  style="display: none"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addCommunity()">
+              + Add Community Involvement
+            </button>
+          </div>
+
+          <!-- STEP 9: AWARDS -->
+          <div class="form-step" id="step-9" style="display: block">
+            <h3>Awards</h3>
+            <div id="awardsContainer">
+              <div class="award-entry">
+                <div class="row">
+                  <div class="form-group">
+                    <label for="awardName1">Award Name</label>
+                    <div class="input-group">
+                      <i class="fas fa-trophy"></i>
+                      <input
+                        type="text"
+                        id="awardName1"
+                        name="awardName1"
+                        placeholder="Enter award name"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="awardYear1">Year</label>
+                    <div class="input-group">
+                      <i class="fas fa-calendar-alt"></i>
+                      <input
+                        type="number"
+                        id="awardYear1"
+                        name="awardYear1"
+                        min="1900"
+                        max="2030"
+                        placeholder="2024"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="form-group">
+                    <label for="awardOrg1">Presenting Organization</label>
+                    <div class="input-group">
+                      <i class="fas fa-building"></i>
+                      <input
+                        type="text"
+                        id="awardOrg1"
+                        name="awardOrg1"
+                        placeholder="Enter organization"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="awardDescription1">Short Description</label>
+                    <div class="input-group">
+                      <i class="fas fa-align-left"></i>
+                      <textarea
+                        id="awardDescription1"
+                        name="awardDescription1"
+                        placeholder="Enter description"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="remove-btn"
+                  onclick="removeAward(this)"
+                  style="display: none"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addAward()">
+              + Add Award
+            </button>
+
+            <h3 style="margin-top: 2rem">References</h3>
+            <div id="referencesContainer">
+              <div class="reference-entry">
+                <div class="row">
+                  <div class="form-group">
+                    <label for="refName1">Reference Name</label>
+                    <div class="input-group">
+                      <i class="fas fa-user"></i>
+                      <input
+                        type="text"
+                        id="refName1"
+                        name="refName1"
+                        placeholder="Enter reference name"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="refPosition1">Position</label>
+                    <div class="input-group">
+                      <i class="fas fa-user-tag"></i>
+                      <input
+                        type="text"
+                        id="refPosition1"
+                        name="refPosition1"
+                        placeholder="Enter position"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="form-group">
+                    <label for="refCompany1">Company</label>
+                    <div class="input-group">
+                      <i class="fas fa-building"></i>
+                      <input
+                        type="text"
+                        id="refCompany1"
+                        name="refCompany1"
+                        placeholder="Enter company"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="refPhone1">Phone</label>
+                    <div class="input-group">
+                      <i class="fas fa-phone"></i>
+                      <input
+                        type="tel"
+                        id="refPhone1"
+                        name="refPhone1"
+                        placeholder="Enter phone"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="form-group">
+                    <label for="refEmail1">Email</label>
+                    <div class="input-group">
+                      <i class="fas fa-envelope"></i>
+                      <input
+                        type="email"
+                        id="refEmail1"
+                        name="refEmail1"
+                        placeholder="Enter email"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="remove-btn"
+                  onclick="removeReference(this)"
+                  style="display: none"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addReference()">
+              + Add Reference
+            </button>
+          </div>
+
+          <!-- STEP 10: REVIEW AND SUBMIT -->
+          <div class="form-step" id="step-10" style="display: none">
+            <h3>Review Your CV & Submit</h3>
+            <div id="reviewInfo" class="review-section">
+              <!-- Review content will be dynamically inserted here -->
+            </div>
+          </div>
+
+          <div class="progress-text">
+            Step <span id="currentStep">1</span> of
+            <span id="totalSteps">10</span>
+          </div>
+          <div class="form-navigation">
+            <button type="button" class="save-draft-btn" id="saveDraftBtn">
+              Save Draft
+            </button>
+            <button type="button" class="clear-form-btn" id="clearFormBtn">
+              Clear Form
+            </button>
+            <button type="button" id="prevBtn">Previous</button>
+            <button type="button" id="nextBtn">Next</button>
+            <button type="submit" id="submitBtn">Submit CV</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script>
-    // Global state
-    let currentStep = 1;
-    const totalSteps = 10;
-    let formCounters = {
+      // Global state
+      let currentStep = 1;
+      const totalSteps = 10;
+      let formCounters = {
         education: 1,
         experience: 1,
         competency: 1,
         project: 1,
         language: 1,
         community: 1,
-        award: 1
-    };
-    let certificateCount = {};
+        award: 1,
+      };
+      let certificateCount = {};
 
-    // Initialize form
-    document.addEventListener('DOMContentLoaded', () => {
-        const modal = document.getElementById('cvFormModal');
+      // Initialize form
+      document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("cvFormModal");
         if (modal) {
-            modal.style.display = 'block';
-            showStep(currentStep);
-            setupEventListeners();
+          modal.style.display = "block";
+          showStep(currentStep);
+          setupEventListeners();
         } else {
-            console.error('cvFormModal not found');
+          console.error("cvFormModal not found");
         }
-    });
+      });
 
-    function setupEventListeners() {
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const saveDraftBtn = document.getElementById('saveDraftBtn');
-        const clearFormBtn = document.getElementById('clearFormBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const form = document.getElementById('cvForm');
+      function setupEventListeners() {
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const saveDraftBtn = document.getElementById("saveDraftBtn");
+        const clearFormBtn = document.getElementById("clearFormBtn");
+        const submitBtn = document.getElementById("submitBtn");
+        const form = document.getElementById("cvForm");
 
-        if (prevBtn) prevBtn.addEventListener('click', () => nextPrev(-1));
-        if (nextBtn) nextBtn.addEventListener('click', () => nextPrev(1));
-        if (saveDraftBtn) saveDraftBtn.addEventListener('click', saveDraft);
-        if (clearFormBtn) clearFormBtn.addEventListener('click', clearForm);
-        if (form && submitBtn) form.addEventListener('submit', submitForm);
-        else console.error('submitBtn or cvForm not found');
-    }
+        if (prevBtn) prevBtn.addEventListener("click", () => nextPrev(-1));
+        if (nextBtn) nextBtn.addEventListener("click", () => nextPrev(1));
+        if (saveDraftBtn) saveDraftBtn.addEventListener("click", saveDraft);
+        if (clearFormBtn) clearFormBtn.addEventListener("click", clearForm);
+        if (form && submitBtn) form.addEventListener("submit", submitForm);
+        else console.error("submitBtn or cvForm not found");
+      }
 
-    function showStep(step) {
-        document.querySelectorAll('.form-step').forEach(s => s.style.display = 'none');
+      function showStep(step) {
+        document
+          .querySelectorAll(".form-step")
+          .forEach((s) => (s.style.display = "none"));
         const currentStepElement = document.getElementById(`step-${step}`);
         if (currentStepElement) {
-            currentStepElement.style.display = 'block';
-            updateStepIndicator(step);
+          currentStepElement.style.display = "block";
+          updateStepIndicator(step);
         } else {
-            console.error(`Step-${step} not found`);
+          console.error(`Step-${step} not found`);
         }
         if (step === totalSteps) {
-            populateReview();
+          populateReview();
         }
-    }
+      }
 
-    function updateStepIndicator(step) {
-        const currentStepEls = document.querySelectorAll('#currentStep');
-        const totalStepsEl = document.getElementById('totalSteps');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const submitBtn = document.getElementById('submitBtn');
+      function updateStepIndicator(step) {
+        const currentStepEls = document.querySelectorAll("#currentStep");
+        const totalStepsEl = document.getElementById("totalSteps");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const submitBtn = document.getElementById("submitBtn");
 
-        if (currentStepEls.length && totalStepsEl && prevBtn && nextBtn && submitBtn) {
-            currentStepEls.forEach(el => el.textContent = step);
-            document.querySelectorAll('#progressBar .progress-step').forEach((el, i) => {
-                el.classList.toggle('active', i < step);
+        if (
+          currentStepEls.length &&
+          totalStepsEl &&
+          prevBtn &&
+          nextBtn &&
+          submitBtn
+        ) {
+          currentStepEls.forEach((el) => (el.textContent = step));
+          document
+            .querySelectorAll("#progressBar .progress-step")
+            .forEach((el, i) => {
+              el.classList.toggle("active", i < step);
             });
-            prevBtn.style.display = step > 1 ? 'inline-block' : 'none';
-            nextBtn.style.display = step < totalSteps ? 'inline-block' : 'none';
-            submitBtn.style.display = step === totalSteps ? 'inline-block' : 'none';
+          prevBtn.style.display = step > 1 ? "inline-block" : "none";
+          nextBtn.style.display = step < totalSteps ? "inline-block" : "none";
+          submitBtn.style.display =
+            step === totalSteps ? "inline-block" : "none";
         } else {
-            console.error('One or more step indicator elements not found');
+          console.error("One or more step indicator elements not found");
         }
-    }
+      }
 
-    function nextPrev(n) {
+      function nextPrev(n) {
         if (validateStep(currentStep)) {
-            currentStep += n;
-            if (currentStep < 1) currentStep = 1;
-            if (currentStep > totalSteps) currentStep = totalSteps;
-            showStep(currentStep);
+          currentStep += n;
+          if (currentStep < 1) currentStep = 1;
+          if (currentStep > totalSteps) currentStep = totalSteps;
+          showStep(currentStep);
         }
-    }
+      }
 
-    function validateStep(step) {
+      function validateStep(step) {
         let isValid = true;
         const stepElement = document.getElementById(`step-${step}`);
         if (stepElement) {
-            stepElement.querySelectorAll('[required]').forEach(input => {
-                const errorEl = input.closest('.form-group')?.querySelector('.error-message');
-                if (!input.value.trim()) {
-                    if (errorEl) errorEl.style.display = 'block';
-                    isValid = false;
-                } else if (errorEl) {
-                    errorEl.style.display = 'none';
-                }
-            });
+          stepElement.querySelectorAll("[required]").forEach((input) => {
+            const errorEl = input
+              .closest(".form-group")
+              ?.querySelector(".error-message");
+            if (!input.value.trim()) {
+              if (errorEl) errorEl.style.display = "block";
+              isValid = false;
+            } else if (errorEl) {
+              errorEl.style.display = "none";
+            }
+          });
         } else {
-            console.error(`Step-${step} not found for validation`);
+          console.error(`Step-${step} not found for validation`);
         }
         return isValid;
-    }
+      }
 
-    function addEducation() {
-        formCounters.education++;
-        const container = document.getElementById('educationContainer');
-        const newEntry = document.createElement('div');
-        newEntry.className = 'education-entry';
-        newEntry.id = `education-${formCounters.education}`;
-        newEntry.innerHTML = `
-            <div class="row">
-                <div class="form-group">
-                    <label for="degreeTitle${formCounters.education}">Degree Title *</label>
-                    <div class="input-group">
-                        <i class="fas fa-graduation-cap"></i>
-                        <input type="text" id="degreeTitle${formCounters.education}" name="degreeTitle${formCounters.education}" required placeholder="Enter your degree title">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-                <div class="form-group">
-                    <label for="university${formCounters.education}">University *</label>
-                    <div class="input-group">
-                        <i class="fas fa-university"></i>
-                        <input type="text" id="university${formCounters.education}" name="university${formCounters.education}" required placeholder="Enter your university">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label for="expectedGraduation${formCounters.education}">Expected Graduation *</label>
-                    <div class="input-group">
-                        <i class="fas fa-calendar"></i>
-                        <input type="text" id="expectedGraduation${formCounters.education}" name="expectedGraduation${formCounters.education}" required placeholder="e.g., 2025 or June 2025">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-            </div>
-            <div id="certificateContainer${formCounters.education}"></div>
-            <button type="button" class="add-btn" onclick="addCertificate(${formCounters.education})">+ Add Certificate</button>
-            <button type="button" class="remove-btn" onclick="removeEducation(this)">- Remove</button>
-        `;
-        if (container) container.appendChild(newEntry);
-        certificateCount[formCounters.education] = 0;
-    }
+      function addEducation() {
+        const container = document.getElementById("educationContainer");
+        const count = container.querySelectorAll(".education-entry").length + 1;
+        const entry = document.createElement("div");
+        entry.className = "education-entry";
+        entry.innerHTML = `
+    <div class="row">
+      <div class="form-group">
+        <label for="degreeTitle${count}">Degree Title *</label>
+        <div class="input-group">
+          <i class="fas fa-graduation-cap"></i>
+          <input type="text" id="degreeTitle${count}" name="degreeTitle${count}" required placeholder="Enter your degree title">
+        </div>
+        <div class="error-message">This field is required</div>
+      </div>
+      <div class="form-group">
+        <label for="university${count}">University, City, Country *</label>
+        <div class="input-group">
+          <i class="fas fa-university"></i>
+          <input type="text" id="university${count}" name="university${count}" required placeholder="Enter your university">
+        </div>
+        <div class="error-message">This field is required</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="eduStartDate${count}">Start Date *</label>
+        <div class="input-group">
+          <i class="fas fa-calendar"></i>
+          <input type="date" id="eduStartDate${count}" name="eduStartDate${count}" required>
+        </div>
+        <div class="error-message">This field is required</div>
+      </div>
+      <div class="form-group">
+        <label for="eduEndDate${count}">End Date *</label>
+        <div class="input-group">
+          <i class="fas fa-calendar"></i>
+          <input type="date" id="eduEndDate${count}" name="eduEndDate${count}" required>
+        </div>
+        <div class="error-message">This field is required</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="gpa${count}">GPA (Optional)</label>
+        <div class="input-group">
+          <i class="fas fa-chart-line"></i>
+          <input type="text" id="gpa${count}" name="gpa${count}" placeholder="e.g., 3.8/4.0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="honours${count}">Honours (Optional)</label>
+        <div class="input-group">
+          <i class="fas fa-award"></i>
+          <input type="text" id="honours${count}" name="honours${count}" placeholder="Enter your honours">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="courses${count}">Relevant Courses (Optional)</label>
+        <div class="input-group">
+          <i class="fas fa-book"></i>
+          <textarea id="courses${count}" name="courses${count}" placeholder="Enter your relevant courses"></textarea>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="remove-btn" onclick="removeEducation(this)">×</button>
+  `;
+        container.appendChild(entry);
+        updateRemoveButtons("educationContainer", "education-entry");
+      }
 
-    function addCertificate(eduIndex) {
-        certificateCount[eduIndex] = (certificateCount[eduIndex] || 0) + 1;
-        const certIndex = certificateCount[eduIndex];
-        const container = document.getElementById(`certificateContainer${eduIndex}`);
-        const newCert = document.createElement('div');
-        newCert.className = 'certificate-entry';
-        newCert.id = `certificate-${eduIndex}-${certIndex}`;
-        newCert.innerHTML = `
-            <div class="row">
-                <div class="form-group">
-                    <label for="certificateTitle${eduIndex}-${certIndex}">Certificate Title *</label>
-                    <div class="input-group">
-                        <i class="fas fa-certificate"></i>
-                        <input type="text" id="certificateTitle${eduIndex}-${certIndex}" name="certificateTitle${eduIndex}-${certIndex}" required placeholder="Enter certificate title">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-                <div class="form-group">
-                    <label for="organization${eduIndex}-${certIndex}">Organization</label>
-                    <div class="input-group">
-                        <i class="fas fa-building"></i>
-                        <input type="text" id="organization${eduIndex}-${certIndex}" name="organization${eduIndex}-${certIndex}" placeholder="Enter organization">
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label for="year${eduIndex}-${certIndex}">Year *</label>
-                    <div class="input-group">
-                        <i class="fas fa-calendar"></i>
-                        <input type="text" id="year${eduIndex}-${certIndex}" name="year${eduIndex}-${certIndex}" required placeholder="e.g., 2023">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-            </div>
-            <button type="button" class="remove-btn" onclick="removeCertificate(this)">- Remove</button>
-        `;
-        if (container) container.appendChild(newCert);
-    }
+      function removeEducation(btn) {
+        const entry = btn.closest(".education-entry");
+        if (entry) entry.remove();
+        updateRemoveButtons("educationContainer", "education-entry");
+      }
 
-    function removeEducation(btn) {
-        const entry = btn.closest('.education-entry');
-        if (entry && formCounters.education > 1) {
+      function addCertificate() {
+        const container = document.getElementById("certificatesContainer");
+        const count =
+          container.querySelectorAll(".certificate-entry").length + 1;
+        const entry = document.createElement("div");
+        entry.className = "certificate-entry";
+        entry.innerHTML = `
+    <div class="row">
+      <div class="form-group">
+        <label for="certificateTitle${count}">Certificate Title</label>
+        <div class="input-group">
+          <i class="fas fa-certificate"></i>
+          <input type="text" id="certificateTitle${count}" name="certificateTitle${count}" placeholder="Enter certificate title">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="certificateOrg${count}">Organization & Location</label>
+        <div class="input-group">
+          <i class="fas fa-building"></i>
+          <input type="text" id="certificateOrg${count}" name="certificateOrg${count}" placeholder="Enter organization & location">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="certDate${count}">Year Obtained</label>
+        <div class="input-group">
+          <i class="fas fa-calendar"></i>
+          <input type="number" id="certDate${count}" name="certDate${count}" min="1900" max="2030" placeholder="2024">
+        </div>
+      </div>
+    </div>
+    <button type="button" class="remove-btn" onclick="removeCertificate(this)">×</button>
+  `;
+        container.appendChild(entry);
+        updateRemoveButtons("certificatesContainer", "certificate-entry");
+      }
+
+      function removeCertificate(btn) {
+        const entry = btn.closest(".certificate-entry");
+        if (entry) entry.remove();
+        updateRemoveButtons("certificatesContainer", "certificate-entry");
+      }
+
+      function updateRemoveButtons(containerId, entryClass) {
+        const container = document.getElementById(containerId);
+        const entries = container.querySelectorAll(`.${entryClass}`);
+        entries.forEach((entry, index) => {
+          const removeBtn = entry.querySelector(".remove-btn");
+          if (removeBtn) {
+            removeBtn.disabled = entries.length === 1;
+          }
+        });
+      }
+
+      function addExperience() {
+        const container = document.getElementById("experienceContainer");
+        const count =
+          container.querySelectorAll(".experience-entry").length + 1;
+        const entry = document.createElement("div");
+        entry.className = "experience-entry";
+        entry.innerHTML = `
+    <div class="row">
+      <div class="form-group">
+        <label for="positionTitle${count}">Position Title *</label>
+        <div class="input-group">
+          <i class="fas fa-briefcase"></i>
+          <input type="text" id="positionTitle${count}" name="positionTitle${count}" required placeholder="Enter your position title">
+        </div>
+        <div class="error-message">This field is required</div>
+      </div>
+      <div class="form-group">
+        <label for="company${count}">Company *</label>
+        <div class="input-group">
+          <i class="fas fa-building"></i>
+          <input type="text" id="company${count}" name="company${count}" required placeholder="Enter company name">
+        </div>
+        <div class="error-message">This field is required</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="location${count}">Location *</label>
+        <div class="input-group">
+          <i class="fas fa-map-marker-alt"></i>
+          <input type="text" id="location${count}" name="location${count}" required placeholder="City, Country">
+        </div>
+        <div class="error-message">This field is required</div>
+      </div>
+      <div class="form-group">
+        <label for="employmentType${count}">Employment Type</label>
+        <div class="input-group">
+          <i class="fas fa-clock"></i>
+          <select id="employmentType${count}" name="employmentType${count}">
+            <option value="">Select type</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Internship">Internship</option>
+            <option value="Freelance">Freelance</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="expStartDate${count}">Start Date *</label>
+        <div class="input-group">
+          <i class="fas fa-calendar"></i>
+          <input type="date" id="expStartDate${count}" name="expStartDate${count}" required>
+        </div>
+        <div class="error-message">This field is required</div>
+      </div>
+      <div class="form-group">
+        <label for="expEndDate${count}">End Date</label>
+        <div class="input-group">
+          <i class="fas fa-calendar"></i>
+          <input type="date" id="expEndDate${count}" name="expEndDate${count}">
+          <label class="checkbox-container">
+            <input type="checkbox" id="currentJob${count}" name="currentJob${count}" onchange="toggleCurrentJob(${count})">
+            <span class="checkmark"></span>
+            Currently working here
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="jobDescription${count}">Job Description *</label>
+      <div class="input-group">
+        <i class="fas fa-align-left"></i>
+        <textarea id="jobDescription${count}" name="jobDescription${count}" required placeholder="Describe your role and responsibilities"></textarea>
+      </div>
+      <div class="error-message">This field is required</div>
+    </div>
+    <div class="accomplishments-section">
+      <h5>Key Accomplishments</h5>
+      <div class="form-group">
+        <label for="expAccomplishment${count}_1">Accomplishment 1</label>
+        <div class="input-group">
+          <i class="fas fa-star"></i>
+          <textarea id="expAccomplishment${count}_1" name="expAccomplishment${count}_1" placeholder="Enter your accomplishment"></textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="expAccomplishment${count}_2">Accomplishment 2</label>
+        <div class="input-group">
+          <i class="fas fa-star"></i>
+          <textarea id="expAccomplishment${count}_2" name="expAccomplishment${count}_2" placeholder="Enter your accomplishment"></textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="expAccomplishment${count}_3">Accomplishment 3</label>
+        <div class="input-group">
+          <i class="fas fa-star"></i>
+          <textarea id="expAccomplishment${count}_3" name="expAccomplishment${count}_3" placeholder="Enter your accomplishment"></textarea>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="remove-btn" onclick="removeExperience(this)">×</button>
+  `;
+        container.appendChild(entry);
+        updateRemoveButtons("experienceContainer", "experience-entry");
+      }
+
+      function removeExperience(btn) {
+        const container = document.getElementById("experienceContainer");
+        const entries = container.querySelectorAll(".experience-entry");
+
+        if (entries.length > 1) {
+          // Only remove if more than one entry exists
+          const entry = btn.closest(".experience-entry");
+          if (entry) {
             entry.remove();
-            formCounters.education--;
+
+            // Optionally reindex the entries (update ids and names)
+            container
+              .querySelectorAll(".experience-entry")
+              .forEach((entry, index) => {
+                const count = index + 1;
+                entry
+                  .querySelectorAll("label, input, textarea, select")
+                  .forEach((el) => {
+                    // Update 'for' attributes on labels
+                    if (
+                      el.tagName.toLowerCase() === "label" &&
+                      el.hasAttribute("for")
+                    ) {
+                      el.setAttribute(
+                        "for",
+                        el
+                          .getAttribute("for")
+                          .replace(
+                            /\d+(_\d+)?$/,
+                            count +
+                              (el.getAttribute("for").match(/_\d+$/) || "")
+                          )
+                      );
+                    }
+                    // Update id attributes
+                    if (el.hasAttribute("id")) {
+                      el.id = el.id.replace(
+                        /\d+(_\d+)?$/,
+                        count + (el.id.match(/_\d+$/) || "")
+                      );
+                    }
+                    // Update name attributes
+                    if (el.hasAttribute("name")) {
+                      el.name = el.name.replace(
+                        /\d+(_\d+)?$/,
+                        count + (el.name.match(/_\d+$/) || "")
+                      );
+                    }
+                  });
+                // Update checkbox onchange attribute for currentJob
+                const checkbox = entry.querySelector(
+                  `input[type="checkbox"][id^="currentJob"]`
+                );
+                if (checkbox) {
+                  checkbox.setAttribute(
+                    "onchange",
+                    `toggleCurrentJob(${count})`
+                  );
+                }
+              });
+
+            // Call your function to update remove buttons if you have it
+            if (typeof updateRemoveButtons === "function") {
+              updateRemoveButtons("experienceContainer", "experience-entry");
+            }
+          }
+        } else {
+          alert("At least one experience entry is required.");
         }
-    }
+      }
 
-    function removeCertificate(btn) {
-        const entry = btn.closest('.certificate-entry');
-        const eduIndex = entry.id.split('-')[1];
-        if (entry && certificateCount[eduIndex] > 0) {
-            entry.remove();
-            certificateCount[eduIndex]--;
-        }
-    }
-
-    function addExperience() {
-        formCounters.experience++;
-        const container = document.getElementById('experienceContainer');
-        const newEntry = document.createElement('div');
-        newEntry.className = 'experience-entry';
-        newEntry.id = `experience-${formCounters.experience}`;
-        newEntry.innerHTML = `
-            <div class="row">
-                <div class="form-group">
-                    <label for="positionTitle${formCounters.experience}">Position Title *</label>
-                    <div class="input-group">
-                        <i class="fas fa-briefcase"></i>
-                        <input type="text" id="positionTitle${formCounters.experience}" name="positionTitle${formCounters.experience}" required placeholder="Enter your position">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-                <div class="form-group">
-                    <label for="company${formCounters.experience}">Company *</label>
-                    <div class="input-group">
-                        <i class="fas fa-building"></i>
-                        <input type="text" id="company${formCounters.experience}" name="company${formCounters.experience}" required placeholder="Enter your company">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label for="dates${formCounters.experience}">Dates *</label>
-                    <div class="input-group">
-                        <i class="fas fa-calendar"></i>
-                        <input type="text" id="dates${formCounters.experience}" name="dates${formCounters.experience}" required placeholder="e.g., 2023-2024">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-                <div class="form-group">
-                    <label for="accomplishments${formCounters.experience}">Accomplishments</label>
-                    <div class="input-group">
-                        <i class="fas fa-list"></i>
-                        <textarea id="accomplishments${formCounters.experience}" name="accomplishments${formCounters.experience}" placeholder="List your accomplishments"></textarea>
-                    </div>
-                </div>
-            </div>
-            <button type="button" class="remove-btn" onclick="removeExperience(this)">- Remove</button>
-        `;
-        if (container) container.appendChild(newEntry);
-    }
-
-    function removeExperience(btn) {
-        const entry = btn.closest('.experience-entry');
-        if (entry && formCounters.experience > 1) {
-            entry.remove();
-            formCounters.experience--;
-        }
-    }
-
-    function addCompetency() {
+      function addCompetency() {
         formCounters.competency++;
-        const container = document.getElementById('competencyContainer');
-        const newEntry = document.createElement('div');
-        newEntry.className = 'competency-entry';
+        const container = document.getElementById("competencyContainer");
+        const newEntry = document.createElement("div");
+        newEntry.className = "competency-entry";
         newEntry.id = `competency-${formCounters.competency}`;
         newEntry.innerHTML = `
             <div class="row">
@@ -674,21 +1442,21 @@
             <button type="button" class="remove-btn" onclick="removeCompetency(this)">- Remove</button>
         `;
         if (container) container.appendChild(newEntry);
-    }
+      }
 
-    function removeCompetency(btn) {
-        const entry = btn.closest('.competency-entry');
+      function removeCompetency(btn) {
+        const entry = btn.closest(".competency-entry");
         if (entry && formCounters.competency > 1) {
-            entry.remove();
-            formCounters.competency--;
+          entry.remove();
+          formCounters.competency--;
         }
-    }
+      }
 
-    function addProject() {
+      function addProject() {
         formCounters.project++;
-        const container = document.getElementById('projectContainer');
-        const newEntry = document.createElement('div');
-        newEntry.className = 'project-entry';
+        const container = document.getElementById("projectContainer");
+        const newEntry = document.createElement("div");
+        newEntry.className = "project-entry";
         newEntry.id = `project-${formCounters.project}`;
         newEntry.innerHTML = `
             <div class="row">
@@ -721,316 +1489,647 @@
             <button type="button" class="remove-btn" onclick="removeProject(this)">- Remove</button>
         `;
         if (container) container.appendChild(newEntry);
-    }
+      }
 
-    function removeProject(btn) {
-        const entry = btn.closest('.project-entry');
+      function removeProject(btn) {
+        const entry = btn.closest(".project-entry");
         if (entry && formCounters.project > 1) {
-            entry.remove();
-            formCounters.project--;
+          entry.remove();
+          formCounters.project--;
         }
-    }
+      }
 
-    function addLanguage() {
-        formCounters.language++;
-        const container = document.getElementById('languageContainer');
-        const newEntry = document.createElement('div');
-        newEntry.className = 'language-entry';
-        newEntry.id = `language-${formCounters.language}`;
-        newEntry.innerHTML = `
-            <div class="row">
-                <div class="form-group">
-                    <label for="languageName${formCounters.language}">Language Name *</label>
-                    <div class="input-group">
-                        <i class="fas fa-language"></i>
-                        <input type="text" id="languageName${formCounters.language}" name="languageName${formCounters.language}" required placeholder="e.g., English">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-            </div>
-            <button type="button" class="remove-btn" onclick="removeLanguage(this)">- Remove</button>
-        `;
-        if (container) container.appendChild(newEntry);
-    }
+      function addLanguage() {
+        const container = document.getElementById("languagesContainer");
+        const count = container.querySelectorAll(".language-entry").length + 1;
 
-    function removeLanguage(btn) {
-        const entry = btn.closest('.language-entry');
-        if (entry && formCounters.language > 1) {
-            entry.remove();
-            formCounters.language--;
+        const entry = document.createElement("div");
+        entry.className = "language-entry";
+        entry.innerHTML = `
+    <div class="row">
+      <div class="form-group">
+        <label for="language${count}">Language</label>
+        <div class="input-group">
+          <i class="fas fa-language"></i>
+          <input type="text" id="language${count}" name="language${count}" placeholder="e.g., English">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="proficiency${count}">Proficiency Level</label>
+        <div class="input-group">
+          <i class="fas fa-star"></i>
+          <select id="proficiency${count}" name="proficiency${count}">
+            <option value="">Select level</option>
+            <option value="Native">Native</option>
+            <option value="Fluent">Fluent</option>
+            <option value="Advanced">Advanced</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Basic">Basic</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="remove-btn" onclick="removeLanguage(this)">×</button>
+  `;
+
+        container.appendChild(entry);
+        updateRemoveButtons("languagesContainer", "language-entry");
+      }
+
+      function removeLanguage(button) {
+        const entry = button.closest(".language-entry");
+        if (entry) {
+          entry.remove();
+          updateRemoveButtons("languagesContainer", "language-entry");
         }
-    }
+      }
 
-    function addCommunity() {
-        formCounters.community++;
-        const container = document.getElementById('communityContainer');
-        const newEntry = document.createElement('div');
-        newEntry.className = 'community-entry';
-        newEntry.id = `community-${formCounters.community}`;
-        newEntry.innerHTML = `
-            <div class="row">
-                <div class="form-group">
-                    <label for="positionTitle${formCounters.community}">Position Title</label>
-                    <div class="input-group">
-                        <i class="fas fa-users"></i>
-                        <input type="text" id="positionTitle${formCounters.community}" name="positionTitle${formCounters.community}" placeholder="e.g., Volunteer">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="organization${formCounters.community}">Organization</label>
-                    <div class="input-group">
-                        <i class="fas fa-building"></i>
-                        <input type="text" id="organization${formCounters.community}" name="organization${formCounters.community}" placeholder="e.g., Red Cross">
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label for="dates${formCounters.community}">Dates</label>
-                    <div class="input-group">
-                        <i class="fas fa-calendar"></i>
-                        <input type="text" id="dates${formCounters.community}" name="dates${formCounters.community}" placeholder="e.g., 2023-2024">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="achievements${formCounters.community}">Achievements</label>
-                    <div class="input-group">
-                        <i class="fas fa-list"></i>
-                        <textarea id="achievements${formCounters.community}" name="achievements${formCounters.community}" placeholder="Describe achievements"></textarea>
-                    </div>
-                </div>
-            </div>
-            <button type="button" class="remove-btn" onclick="removeCommunity(this)">- Remove</button>
-        `;
-        if (container) container.appendChild(newEntry);
-    }
+      function updateRemoveButtons(containerId, entryClass) {
+        const container = document.getElementById(containerId);
+        const entries = container.querySelectorAll(`.${entryClass}`);
+        entries.forEach((entry, index) => {
+          const removeBtn = entry.querySelector(".remove-btn");
+          if (removeBtn) {
+            removeBtn.style.display =
+              entries.length > 1 ? "inline-block" : "none";
+          }
 
-    function removeCommunity(btn) {
-        const entry = btn.closest('.community-entry');
-        if (entry && formCounters.community > 1) {
-            entry.remove();
-            formCounters.community--;
+          // Optional: update input IDs and names if needed
+          const langInput = entry.querySelector('input[type="text"]');
+          const selectInput = entry.querySelector("select");
+          if (langInput) {
+            langInput.id = `language${index + 1}`;
+            langInput.name = `language${index + 1}`;
+          }
+          if (selectInput) {
+            selectInput.id = `proficiency${index + 1}`;
+            selectInput.name = `proficiency${index + 1}`;
+          }
+        });
+      }
+
+      function addCommunity() {
+        const container = document.getElementById("communityContainer");
+        const count = container.querySelectorAll(".community-entry").length + 1;
+        const entry = document.createElement("div");
+        entry.className = "community-entry";
+        entry.innerHTML = `
+    <div class="row">
+      <div class="form-group">
+        <label for="communityPosition${count}">Position Title</label>
+        <div class="input-group">
+          <i class="fas fa-handshake"></i>
+          <input type="text" id="communityPosition${count}" name="communityPosition${count}" placeholder="Enter position title">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="communityOrg${count}">Organization, City, Country</label>
+        <div class="input-group">
+          <i class="fas fa-building"></i>
+          <input type="text" id="communityOrg${count}" name="communityOrg${count}" placeholder="Enter organization details">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="communityStartDate${count}">Start Date</label>
+        <div class="input-group">
+          <i class="fas fa-calendar"></i>
+          <input type="date" id="communityStartDate${count}" name="communityStartDate${count}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="communityEndDate${count}">End Date</label>
+        <div class="input-group">
+          <i class="fas fa-calendar"></i>
+          <input type="date" id="communityEndDate${count}" name="communityEndDate${count}">
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="communityAccomplishment${count}">Accomplishment</label>
+      <div class="input-group">
+        <i class="fas fa-check-circle"></i>
+        <textarea id="communityAccomplishment${count}" name="communityAccomplishment${count}" placeholder="Enter accomplishment"></textarea>
+      </div>
+    </div>
+    <button type="button" class="remove-btn" onclick="removeCommunity(this)">×</button>
+  `;
+        container.appendChild(entry);
+        updateRemoveButtons("communityContainer", "community-entry");
+      }
+
+      function removeCommunity(button) {
+        const entry = button.closest(".community-entry");
+        if (!entry) return;
+
+        const container = document.getElementById("communityContainer");
+        if (container.querySelectorAll(".community-entry").length > 1) {
+          entry.remove();
+          updateRemoveButtons("communityContainer", "community-entry");
         }
-    }
+      }
 
-    function addAward() {
+      function updateRemoveButtons(containerId, entryClass) {
+        const container = document.getElementById(containerId);
+        const entries = container.querySelectorAll(`.${entryClass}`);
+
+        // Show remove buttons only if more than one entry exists
+        entries.forEach((entry, index) => {
+          const btn = entry.querySelector(".remove-btn");
+          if (btn)
+            btn.style.display = entries.length > 1 ? "inline-block" : "none";
+        });
+      }
+
+      function addAward() {
         formCounters.award++;
-        const container = document.getElementById('awardContainer');
-        const newEntry = document.createElement('div');
-        newEntry.className = 'award-entry';
-        newEntry.id = `award-${formCounters.award}`;
+        const container = document.getElementById("awardsContainer");
+        const count = formCounters.award;
+        const newEntry = document.createElement("div");
+        newEntry.className = "award-entry";
+        newEntry.id = `award-${count}`;
         newEntry.innerHTML = `
-            <div class="row">
-                <div class="form-group">
-                    <label for="awardName${formCounters.award}">Award Name *</label>
-                    <div class="input-group">
-                        <i class="fas fa-trophy"></i>
-                        <input type="text" id="awardName${formCounters.award}" name="awardName${formCounters.award}" required placeholder="Enter award name">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-                <div class="form-group">
-                    <label for="year${formCounters.award}">Year *</label>
-                    <div class="input-group">
-                        <i class="fas fa-calendar"></i>
-                        <input type="text" id="year${formCounters.award}" name="year${formCounters.award}" required placeholder="e.g., 2023">
-                    </div>
-                    <div class="error-message">This field is required</div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label for="shortDescription${formCounters.award}">Short Description</label>
-                    <div class="input-group">
-                        <i class="fas fa-list"></i>
-                        <textarea id="shortDescription${formCounters.award}" name="shortDescription${formCounters.award}" placeholder="Brief description"></textarea>
-                    </div>
-                </div>
-            </div>
-            <button type="button" class="remove-btn" onclick="removeAward(this)">- Remove</button>
-        `;
-        if (container) container.appendChild(newEntry);
-    }
+    <div class="row">
+      <div class="form-group">
+        <label for="awardName${count}">Award Name</label>
+        <div class="input-group">
+          <i class="fas fa-trophy"></i>
+          <input type="text" id="awardName${count}" name="awardName${count}" placeholder="Enter award name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="awardYear${count}">Year</label>
+        <div class="input-group">
+          <i class="fas fa-calendar-alt"></i>
+          <input type="number" id="awardYear${count}" name="awardYear${count}" min="1900" max="2030" placeholder="2024">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="awardOrg${count}">Presenting Organization</label>
+        <div class="input-group">
+          <i class="fas fa-building"></i>
+          <input type="text" id="awardOrg${count}" name="awardOrg${count}" placeholder="Enter organization">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="awardDescription${count}">Short Description</label>
+        <div class="input-group">
+          <i class="fas fa-align-left"></i>
+          <textarea id="awardDescription${count}" name="awardDescription${count}" placeholder="Enter description"></textarea>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="remove-btn" onclick="removeAward(this)">×</button>
+  `;
+        container.appendChild(newEntry);
+        updateRemoveButtons("awardsContainer", "award-entry");
+      }
 
-    function removeAward(btn) {
-        const entry = btn.closest('.award-entry');
-        if (entry && formCounters.award > 1) {
-            entry.remove();
-            formCounters.award--;
+      function removeAward(btn) {
+        const entry = btn.closest(".award-entry");
+        const container = document.getElementById("awardsContainer");
+        if (entry && container.querySelectorAll(".award-entry").length > 1) {
+          entry.remove();
+          formCounters.award--;
+          updateRemoveButtons("awardsContainer", "award-entry");
         }
-    }
+      }
 
-    function saveDraft() {
-        showMessage('Draft saved (feature not implemented yet)', 'success');
-        console.log('Draft saved');
-    }
+      // Helper to show/hide remove buttons based on count
+      function updateRemoveButtons(containerId, entryClass) {
+        const container = document.getElementById(containerId);
+        const entries = container.querySelectorAll(`.${entryClass}`);
+        entries.forEach((entry) => {
+          const btn = entry.querySelector(".remove-btn");
+          if (btn)
+            btn.style.display = entries.length > 1 ? "inline-block" : "none";
+        });
+      }
 
-    function clearForm() {
-        if (confirm('Are you sure you want to clear the form?')) {
-            const form = document.getElementById('cvForm');
-            if (form) form.reset();
-            formCounters = { education: 1, experience: 1, competency: 1, project: 1, language: 1, community: 1, award: 1 };
-            certificateCount = {};
-            const containers = ['educationContainer', 'experienceContainer', 'competencyContainer', 'projectContainer', 'languageContainer', 'communityContainer', 'awardContainer'];
-            containers.forEach(containerId => {
-                const container = document.getElementById(containerId);
-                const baseId = containerId.replace('Container', '-1');
-                if (container && document.getElementById(baseId)) {
-                    container.innerHTML = document.getElementById(baseId).outerHTML;
-                }
-            });
-            showStep(1);
-            console.log('Form cleared');
+      function addReference() {
+        const container = document.getElementById("referencesContainer");
+        const count = container.querySelectorAll(".reference-entry").length + 1;
+        const entry = document.createElement("div");
+        entry.className = "reference-entry";
+        entry.innerHTML = `
+    <div class="row">
+      <div class="form-group">
+        <label for="refName${count}">Reference Name</label>
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          <input type="text" id="refName${count}" name="refName${count}" placeholder="Enter reference name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="refPosition${count}">Position</label>
+        <div class="input-group">
+          <i class="fas fa-user-tag"></i>
+          <input type="text" id="refPosition${count}" name="refPosition${count}" placeholder="Enter position">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="refCompany${count}">Company</label>
+        <div class="input-group">
+          <i class="fas fa-building"></i>
+          <input type="text" id="refCompany${count}" name="refCompany${count}" placeholder="Enter company">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="refPhone${count}">Phone</label>
+        <div class="input-group">
+          <i class="fas fa-phone"></i>
+          <input type="tel" id="refPhone${count}" name="refPhone${count}" placeholder="Enter phone">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="refEmail${count}">Email</label>
+        <div class="input-group">
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="refEmail${count}" name="refEmail${count}" placeholder="Enter email">
+        </div>
+      </div>
+    </div>
+    <button type="button" class="remove-btn" onclick="removeReference(this)">×</button>
+  `;
+        container.appendChild(entry);
+        updateRemoveButtons("referencesContainer", "reference-entry");
+      }
+
+      function removeReference(btn) {
+        const container = document.getElementById("referencesContainer");
+        const entry = btn.closest(".reference-entry");
+        if (
+          entry &&
+          container.querySelectorAll(".reference-entry").length > 1
+        ) {
+          entry.remove();
+          updateRemoveButtons("referencesContainer", "reference-entry");
         }
-    }
+      }
 
-    function populateReview() {
-        const reviewInfo = document.getElementById('reviewInfo');
+      function updateRemoveButtons(containerId, entryClass) {
+        const container = document.getElementById(containerId);
+        const entries = container.querySelectorAll(`.${entryClass}`);
+        entries.forEach((entry) => {
+          const btn = entry.querySelector(".remove-btn");
+          if (btn)
+            btn.style.display = entries.length > 1 ? "inline-block" : "none";
+        });
+      }
+
+      function saveDraft() {
+        showMessage("Draft saved (feature not implemented yet)", "success");
+        console.log("Draft saved");
+      }
+
+      function clearForm() {
+        if (confirm("Are you sure you want to clear the form?")) {
+          const form = document.getElementById("cvForm");
+          if (form) form.reset();
+          formCounters = {
+            education: 1,
+            experience: 1,
+            competency: 1,
+            project: 1,
+            language: 1,
+            community: 1,
+            award: 1,
+          };
+          certificateCount = {};
+          const containers = [
+            "educationContainer",
+            "experienceContainer",
+            "competencyContainer",
+            "projectContainer",
+            "languageContainer",
+            "communityContainer",
+            "awardContainer",
+          ];
+          containers.forEach((containerId) => {
+            const container = document.getElementById(containerId);
+            const baseId = containerId.replace("Container", "-1");
+            if (container && document.getElementById(baseId)) {
+              container.innerHTML = document.getElementById(baseId).outerHTML;
+            }
+          });
+          showStep(1);
+          console.log("Form cleared");
+        }
+      }
+
+      function populateReview() {
+        const reviewInfo = document.getElementById("reviewInfo");
         if (reviewInfo) {
-            reviewInfo.innerHTML = `
+          reviewInfo.innerHTML = `
                 <h4>Personal Information</h4>
-                <p>Name: ${document.getElementById('name')?.value || 'N/A'}</p>
-                <p>Surname: ${document.getElementById('surname')?.value || 'N/A'}</p>
-                <p>Email: ${document.getElementById('email')?.value || 'N/A'}</p>
-                <p>Major: ${document.getElementById('major')?.value || 'N/A'}</p>
+                <p>Name: ${document.getElementById("name")?.value || "N/A"}</p>
+                <p>Surname: ${
+                  document.getElementById("surname")?.value || "N/A"
+                }</p>
+                <p>Email: ${
+                  document.getElementById("email")?.value || "N/A"
+                }</p>
+                <p>Major: ${
+                  document.getElementById("major")?.value || "N/A"
+                }</p>
                 <h4>Education</h4>
-                ${Array.from({ length: formCounters.education }, (_, i) => `
-                    <p><strong>${document.getElementById(`degreeTitle${i + 1}`)?.value || 'N/A'}</strong> at ${document.getElementById(`university${i + 1}`)?.value || 'N/A'}, Expected: ${document.getElementById(`expectedGraduation${i + 1}`)?.value || 'N/A'}</p>
-                    ${certificateCount[i + 1] ? '<ul>' + Array.from({ length: certificateCount[i + 1] }, (_, j) => `
-                        <li>${document.getElementById(`certificateTitle${i + 1}-${j + 1}`)?.value || 'N/A'} (${document.getElementById(`year${i + 1}-${j + 1}`)?.value || 'N/A'}) - ${document.getElementById(`organization${i + 1}-${j + 1}`)?.value || 'N/A'}</li>
-                    `).join('') + '</ul>' : ''}
-                `).join('')}
+                ${Array.from(
+                  { length: formCounters.education },
+                  (_, i) => `
+                    <p><strong>${
+                      document.getElementById(`degreeTitle${i + 1}`)?.value ||
+                      "N/A"
+                    }</strong> at ${
+                    document.getElementById(`university${i + 1}`)?.value ||
+                    "N/A"
+                  }, Expected: ${
+                    document.getElementById(`expectedGraduation${i + 1}`)
+                      ?.value || "N/A"
+                  }</p>
+                    ${
+                      certificateCount[i + 1]
+                        ? "<ul>" +
+                          Array.from(
+                            { length: certificateCount[i + 1] },
+                            (_, j) => `
+                        <li>${
+                          document.getElementById(
+                            `certificateTitle${i + 1}-${j + 1}`
+                          )?.value || "N/A"
+                        } (${
+                              document.getElementById(`year${i + 1}-${j + 1}`)
+                                ?.value || "N/A"
+                            }) - ${
+                              document.getElementById(
+                                `organization${i + 1}-${j + 1}`
+                              )?.value || "N/A"
+                            }</li>
+                    `
+                          ).join("") +
+                          "</ul>"
+                        : ""
+                    }
+                `
+                ).join("")}
                 <h4>Professional Experience</h4>
-                ${Array.from({ length: formCounters.experience }, (_, i) => `
-                    <p><strong>${document.getElementById(`positionTitle${i + 1}`)?.value || 'N/A'}</strong> at ${document.getElementById(`company${i + 1}`)?.value || 'N/A'}, ${document.getElementById(`dates${i + 1}`)?.value || 'N/A'}</p>
-                    <p>Accomplishments: ${document.getElementById(`accomplishments${i + 1}`)?.value || 'N/A'}</p>
-                `).join('')}
+                ${Array.from(
+                  { length: formCounters.experience },
+                  (_, i) => `
+                    <p><strong>${
+                      document.getElementById(`positionTitle${i + 1}`)?.value ||
+                      "N/A"
+                    }</strong> at ${
+                    document.getElementById(`company${i + 1}`)?.value || "N/A"
+                  }, ${
+                    document.getElementById(`dates${i + 1}`)?.value || "N/A"
+                  }</p>
+                    <p>Accomplishments: ${
+                      document.getElementById(`accomplishments${i + 1}`)
+                        ?.value || "N/A"
+                    }</p>
+                `
+                ).join("")}
                 <h4>Professional Competencies</h4>
-                ${Array.from({ length: formCounters.competency }, (_, i) => `
-                    <p><strong>${document.getElementById(`competencyType${i + 1}`)?.value || 'N/A'}</strong>: ${document.getElementById(`keyAccomplishments${i + 1}`)?.value || 'N/A'}</p>
-                `).join('')}
+                ${Array.from(
+                  { length: formCounters.competency },
+                  (_, i) => `
+                    <p><strong>${
+                      document.getElementById(`competencyType${i + 1}`)
+                        ?.value || "N/A"
+                    }</strong>: ${
+                    document.getElementById(`keyAccomplishments${i + 1}`)
+                      ?.value || "N/A"
+                  }</p>
+                `
+                ).join("")}
                 <h4>Projects</h4>
-                ${Array.from({ length: formCounters.project }, (_, i) => `
-                    <p><strong>${document.getElementById(`projectTitle${i + 1}`)?.value || 'N/A'}</strong> (${document.getElementById(`year${i + 1}`)?.value || 'N/A'}): ${document.getElementById(`summary${i + 1}`)?.value || 'N/A'}</p>
-                `).join('')}
+                ${Array.from(
+                  { length: formCounters.project },
+                  (_, i) => `
+                    <p><strong>${
+                      document.getElementById(`projectTitle${i + 1}`)?.value ||
+                      "N/A"
+                    }</strong> (${
+                    document.getElementById(`year${i + 1}`)?.value || "N/A"
+                  }): ${
+                    document.getElementById(`summary${i + 1}`)?.value || "N/A"
+                  }</p>
+                `
+                ).join("")}
                 <h4>Technical Skills</h4>
-                <p>Programming Languages: ${document.getElementById('programmingLanguages')?.value || 'N/A'}</p>
-                <p>Frameworks/Databases: ${document.getElementById('frameworksDatabases')?.value || 'N/A'}</p>
-                <p>Tools: ${document.getElementById('tools')?.value || 'N/A'}</p>
+                <p>Programming Languages: ${
+                  document.getElementById("programmingLanguages")?.value ||
+                  "N/A"
+                }</p>
+                <p>Frameworks/Databases: ${
+                  document.getElementById("frameworksDatabases")?.value || "N/A"
+                }</p>
+                <p>Tools: ${
+                  document.getElementById("tools")?.value || "N/A"
+                }</p>
                 <h4>Spoken Languages</h4>
-                ${Array.from({ length: formCounters.language }, (_, i) => `
-                    <p>${document.getElementById(`languageName${i + 1}`)?.value || 'N/A'}</p>
-                `).join('')}
+                ${Array.from(
+                  { length: formCounters.language },
+                  (_, i) => `
+                    <p>${
+                      document.getElementById(`languageName${i + 1}`)?.value ||
+                      "N/A"
+                    }</p>
+                `
+                ).join("")}
                 <h4>Community Involvement</h4>
-                ${Array.from({ length: formCounters.community }, (_, i) => `
-                    <p><strong>${document.getElementById(`positionTitle${i + 1}`)?.value || 'N/A'}</strong> at ${document.getElementById(`organization${i + 1}`)?.value || 'N/A'}, ${document.getElementById(`dates${i + 1}`)?.value || 'N/A'}</p>
-                    <p>Achievements: ${document.getElementById(`achievements${i + 1}`)?.value || 'N/A'}</p>
-                `).join('')}
+                ${Array.from(
+                  { length: formCounters.community },
+                  (_, i) => `
+                    <p><strong>${
+                      document.getElementById(`positionTitle${i + 1}`)?.value ||
+                      "N/A"
+                    }</strong> at ${
+                    document.getElementById(`organization${i + 1}`)?.value ||
+                    "N/A"
+                  }, ${
+                    document.getElementById(`dates${i + 1}`)?.value || "N/A"
+                  }</p>
+                    <p>Achievements: ${
+                      document.getElementById(`achievements${i + 1}`)?.value ||
+                      "N/A"
+                    }</p>
+                `
+                ).join("")}
                 <h4>Awards</h4>
-                ${Array.from({ length: formCounters.award }, (_, i) => `
-                    <p><strong>${document.getElementById(`awardName${i + 1}`)?.value || 'N/A'}</strong> (${document.getElementById(`year${i + 1}`)?.value || 'N/A'}): ${document.getElementById(`shortDescription${i + 1}`)?.value || 'N/A'}</p>
-                `).join('')}
+                ${Array.from(
+                  { length: formCounters.award },
+                  (_, i) => `
+                    <p><strong>${
+                      document.getElementById(`awardName${i + 1}`)?.value ||
+                      "N/A"
+                    }</strong> (${
+                    document.getElementById(`year${i + 1}`)?.value || "N/A"
+                  }): ${
+                    document.getElementById(`shortDescription${i + 1}`)
+                      ?.value || "N/A"
+                  }</p>
+                `
+                ).join("")}
             `;
         }
-    }
+      }
 
-    async function submitForm(e) {
-    e.preventDefault();
-    if (!validateStep(currentStep)) return; // Assuming you have a validation step
+      async function submitForm(e) {
+        e.preventDefault();
+        if (!validateStep(currentStep)) return; // Your validation logic
 
-    // Collect form data with top-level fields
-    const formData = {
-        name: document.getElementById('name').value,
-        surname: document.getElementById('surname').value,
-        email: document.getElementById('email').value,
-        major: document.getElementById('major').value, // Include if your form has this
-        educations: Array.from({ length: formCounters.education }, (_, i) => ({
-            degree_title: document.getElementById(`degreeTitle${i + 1}`).value,
-            university: document.getElementById(`university${i + 1}`).value,
-            expected_graduation: document.getElementById(`expectedGraduation${i + 1}`).value,
-            certificates: certificateCount[i + 1] ? Array.from({ length: certificateCount[i + 1] }, (_, j) => ({
-                certificate_title: document.getElementById(`certificateTitle${i + 1}-${j + 1}`).value,
-                organization: document.getElementById(`organization${i + 1}-${j + 1}`).value,
-                year: document.getElementById(`year${i + 1}-${j + 1}`).value
-            })) : []
-        })),
-        experiences: Array.from({ length: formCounters.experience }, (_, i) => ({
-            position_title: document.getElementById(`positionTitle${i + 1}`).value,
-            company: document.getElementById(`company${i + 1}`).value,
-            dates: document.getElementById(`dates${i + 1}`).value,
-            accomplishments: document.getElementById(`accomplishments${i + 1}`).value
-        })),
-            competencies: Array.from({ length: formCounters.competency }, (_, i) => ({
-                competency_type: document.getElementById(`competencyType${i + 1}`).value,
-                key_accomplishments: document.getElementById(`keyAccomplishments${i + 1}`).value
-            })),
-            projects: Array.from({ length: formCounters.project }, (_, i) => ({
-                project_title: document.getElementById(`projectTitle${i + 1}`).value,
-                year: document.getElementById(`year${i + 1}`).value,
-                summary: document.getElementById(`summary${i + 1}`).value
-            })),
-            technical_skills: {
-                programming_languages: document.getElementById('programmingLanguages').value,
-                frameworks_databases: document.getElementById('frameworksDatabases').value,
-                tools: document.getElementById('tools').value
-            },
-            languages: Array.from({ length: formCounters.language }, (_, i) => ({
-                name: document.getElementById(`languageName${i + 1}`).value
-            })),
-            community_involvements: Array.from({ length: formCounters.community }, (_, i) => ({
-                position_title: document.getElementById(`positionTitle${i + 1}`).value,
-                organization: document.getElementById(`organization${i + 1}`).value,
-                dates: document.getElementById(`dates${i + 1}`).value,
-                achievements: document.getElementById(`achievements${i + 1}`).value
-            })),
-            awards: Array.from({ length: formCounters.award }, (_, i) => ({
-                award_name: document.getElementById(`awardName${i + 1}`).value,
-                year: document.getElementById(`year${i + 1}`).value,
-                short_description: document.getElementById(`shortDescription${i + 1}`).value
-            }))
+        // Helper to safely get element value by id, returns "" if not found
+        function getValue(id) {
+          const el = document.getElementById(id);
+          return el ? el.value : "";
+        }
+
+        // Collect form data with top-level fields
+        const formData = {
+          name: getValue("name"),
+          surname: getValue("surname"),
+          email: getValue("email"),
+          major: getValue("major"),
+
+          educations: Array.from(
+            { length: formCounters.education },
+            (_, i) => ({
+              degree_title: getValue(`degreeTitle${i + 1}`),
+              university: getValue(`university${i + 1}`),
+              expected_graduation: getValue(`expectedGraduation${i + 1}`),
+              certificates: certificateCount[i + 1]
+                ? Array.from({ length: certificateCount[i + 1] }, (_, j) => ({
+                    certificate_title: getValue(
+                      `certificateTitle${i + 1}-${j + 1}`
+                    ),
+                    organization: getValue(`organization${i + 1}-${j + 1}`),
+                    year: getValue(`year${i + 1}-${j + 1}`),
+                  }))
+                : [],
+            })
+          ),
+
+          experiences: Array.from(
+            { length: formCounters.experience },
+            (_, i) => ({
+              position_title: getValue(`positionTitle${i + 1}`),
+              company: getValue(`company${i + 1}`),
+              dates: getValue(`dates${i + 1}`),
+              accomplishments: getValue(`accomplishments${i + 1}`),
+            })
+          ),
+
+          competencies: Array.from(
+            { length: formCounters.competency },
+            (_, i) => ({
+              competency_type: getValue(`competencyType${i + 1}`),
+              key_accomplishments: getValue(`keyAccomplishments${i + 1}`),
+            })
+          ),
+
+          projects: Array.from({ length: formCounters.project }, (_, i) => ({
+            project_title: getValue(`projectTitle${i + 1}`),
+            year: getValue(`year${i + 1}`),
+            summary: getValue(`summary${i + 1}`),
+          })),
+
+          technical_skills: {
+            programming_languages: getValue("programmingLanguages"),
+            frameworks_databases: getValue("frameworksDatabases"),
+            tools: getValue("tools"),
+          },
+
+          languages: Array.from({ length: formCounters.language }, (_, i) => ({
+            name: getValue(`languageName${i + 1}`),
+          })),
+
+          community_involvements: Array.from(
+            { length: formCounters.community },
+            (_, i) => ({
+              position_title: getValue(`communityPosition${i + 1}`),
+              organization: getValue(`communityOrg${i + 1}`),
+              start_date: getValue(`communityStartDate${i + 1}`),
+              end_date: getValue(`communityEndDate${i + 1}`),
+              achievements: getValue(`communityAchievements${i + 1}`),
+            })
+          ),
+
+          awards: Array.from({ length: formCounters.award }, (_, i) => ({
+            award_name: getValue(`awardName${i + 1}`),
+            year: getValue(`awardYear${i + 1}`),
+            presenting_organization: getValue(`awardOrg${i + 1}`),
+            short_description: getValue(`awardDescription${i + 1}`),
+          })),
+
+          references: Array.from(
+            { length: formCounters.reference },
+            (_, i) => ({
+              reference_name: getValue(`refName${i + 1}`),
+              position: getValue(`refPosition${i + 1}`),
+              company: getValue(`refCompany${i + 1}`),
+              phone: getValue(`refPhone${i + 1}`),
+              email: getValue(`refEmail${i + 1}`),
+            })
+          ),
         };
 
         try {
-        const response = await fetch('/cv/submit/', {
-            method: 'POST',
+          const response = await fetch("/cv/submit/", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken') // Include if your backend requires CSRF
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"), // If needed
             },
-            body: JSON.stringify(formData)
-        });
+            body: JSON.stringify(formData),
+          });
 
-        if (!response.ok) throw new Error('Failed to submit CV');
-        const data = await response.json();
-        showMessage('CV submitted successfully! Downloading your PDF...', 'success'); // Adjust based on your UI
-        window.location.href = data.pdf_url; // Redirect to download the PDF
-    } catch (error) {
-        showMessage(`Error submitting CV: ${error.message}`, 'error'); // Adjust based on your UI
-    }
-}
+          if (!response.ok) throw new Error("Failed to submit CV");
+          const data = await response.json();
+          showMessage(
+            "CV submitted successfully! Downloading your PDF...",
+            "success"
+          );
+          window.location.href = data.pdf_url; // Redirect to PDF
+        } catch (error) {
+          showMessage(`Error submitting CV: ${error.message}`, "error");
+        }
+      }
 
-// Helper function to get CSRF token (if needed)
-    function getCookie(name) {
+      // Helper function to get CSRF token (if needed)
+      function getCookie(name) {
         let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
             }
+          }
         }
         return cookieValue;
-    }
-    function showMessage(text, type) {
-        const message = document.createElement('div');
-        message.style.cssText = 'position: fixed; top: 10px; left: 50%; transform: translateX(-50%); padding: 10px; background: ' + (type === 'success' ? '#4CAF50' : '#f44336') + '; color: #fff; border-radius: 5px; z-index: 1000;';
+      }
+      function showMessage(text, type) {
+        const message = document.createElement("div");
+        message.style.cssText =
+          "position: fixed; top: 10px; left: 50%; transform: translateX(-50%); padding: 10px; background: " +
+          (type === "success" ? "#4CAF50" : "#f44336") +
+          "; color: #fff; border-radius: 5px; z-index: 1000;";
         message.textContent = text;
         document.body.appendChild(message);
         setTimeout(() => message.remove(), 5000);
-    }
+      }
     </script>
-</body>
+  </body>
 </html>

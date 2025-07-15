@@ -12,9 +12,11 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from django.shortcuts import render
-
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import CVSubmission
 logger = logging.getLogger(__name__)
-
 def generate_pdf(cv):
     logger.info("Preparing context for PDF generation")
     from .models import Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
@@ -613,3 +615,18 @@ def cv_detail_view(request, cv_id):
         return render(request, 'cv/cv-detail.html', context)
     except CVSubmission.DoesNotExist:
         return render(request, 'cv/cv-cards.html', {'cvs': CVSubmission.objects.all().order_by('-submitted_at'), 'error': 'CV not found'})
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def cv_cards_view(request):
+    cvs = CVSubmission.objects.all().order_by('-submitted_at')
+    serializer = CVSubmissionSerializer(cvs, many=True)
+    return Response(serializer.data)
+
+from rest_framework import serializers
+from .models import CVSubmission
+
+class CVSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CVSubmission
+        fields = '__all__'

@@ -7,8 +7,8 @@ from django.utils.http import urlsafe_base64_decode
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'is_pending']
+        extra_kwargs = {'password': {'write_only': True}, 'is_pending': {'read_only': True}}
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(
@@ -16,7 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', '')
+            last_name=validated_data.get('last_name', ''),
+            is_pending=True  
         )
         return user
 
@@ -33,10 +34,9 @@ class PasswordResetSerializer(serializers.Serializer):
 class PasswordResetConfirmSerializer(serializers.Serializer):
     uidb64 = serializers.CharField()
     token = serializers.CharField()
-    new_password = serializers.CharField(write_only=True, min_length=8)  # Ensure string input
+    new_password = serializers.CharField(write_only=True, min_length=8)
 
     def validate(self, data):
-        # Debug: Print incoming data to verify
         print("Validating data:", data)
         try:
             uid = force_str(urlsafe_base64_decode(data['uidb64']))
@@ -47,7 +47,6 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if not PasswordResetTokenGenerator().check_token(user, data['token']):
             raise serializers.ValidationError({"non_field_errors": ["Invalid or expired token."]})
 
-        # Validate new_password here if needed, but it should already be handled by CharField
         if len(data['new_password']) < 8:
             raise serializers.ValidationError({"new_password": ["Password must be at least 8 characters."]})
         data['user'] = user

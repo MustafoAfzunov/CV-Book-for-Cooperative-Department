@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
 from .models import CustomUser
 from rest_framework.permissions import AllowAny
-from django.conf import settings  # Import settings to access DEFAULT_FROM_EMAIL
+from django.conf import settings
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
@@ -19,10 +19,9 @@ class SignupView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            refresh = RefreshToken.for_user(user)
+            # No tokens issued for pending users
             return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
+                'message': 'Account created. Awaiting admin approval.',
                 'user': serializer.data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -35,7 +34,9 @@ class SigninView(APIView):
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
         
-        if user:
+        if user is not None:
+            if user.is_pending:
+                return Response({'error': 'Your account is pending admin approval.'}, status=status.HTTP_403_FORBIDDEN)
             refresh = RefreshToken.for_user(user)
             serializer = UserSerializer(user)
             return Response({
@@ -70,11 +71,9 @@ class PasswordResetConfirmView(APIView):
     permission_classes = []
 
     def post(self, request, uidb64, token):
-        # Debug: Print incoming request data
         print("Request data:", request.data)
         serializer = PasswordResetConfirmSerializer(data={**request.data, 'uidb64': uidb64, 'token': token})
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-

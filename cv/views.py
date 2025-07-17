@@ -161,9 +161,10 @@ class CVSubmitView(APIView):
 
         from .models import Education, Certificate, ProfessionalExperience, ProfessionalCompetency, Project, TechnicalSkill, Language, CommunityInvolvement, Award, Reference
         for edu_data in data.get('educations', []):
-            if not all([edu_data.get(k) for k in ['degree_title', 'university', 'expected_graduation']]):
+            required_fields = ['degree_title', 'university']
+            if not all(edu_data.get(k) for k in required_fields):
                 logger.error("Invalid education data: %s", edu_data)
-                return Response({"error": "Invalid education data"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid education data: degree_title and university are required"}, status=status.HTTP_400_BAD_REQUEST)
             education = Education.objects.create(cv=cv, **{k: v for k, v in edu_data.items() if k != 'certificates'})
             for cert_data in edu_data.get('certificates', []):
                 if not cert_data.get('certificate_title'):
@@ -172,15 +173,19 @@ class CVSubmitView(APIView):
                 Certificate.objects.create(education=education, **cert_data)
 
         for exp_data in data.get('experiences', []):
-            if not all([exp_data.get(k) for k in ['position_title', 'company', 'dates']]):
+            required_fields = ['position_title', 'company']
+            if not all(exp_data.get(k) for k in required_fields):
                 logger.error("Invalid experience data: %s", exp_data)
-                return Response({"error": "Invalid experience data"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid experience data: position_title and company are required"}, status=status.HTTP_400_BAD_REQUEST)
             ProfessionalExperience.objects.create(cv=cv, **exp_data)
 
         for comp_data in data.get('competencies', []):
-            if not comp_data.get('competency_type'):
+            if not comp_data.get('competency_type') and not comp_data.get('key_accomplishments'):
+                logger.info("Skipping competency as both competency_type and key_accomplishments are empty: %s", comp_data)
+                continue
+            if not any([comp_data.get(k) for k in ['competency_type', 'key_accomplishments']]):
                 logger.error("Invalid competency data: %s", comp_data)
-                return Response({"error": "Invalid competency data"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid competency data: at least one of competency_type or key_accomplishments is required"}, status=status.HTTP_400_BAD_REQUEST)
             ProfessionalCompetency.objects.create(cv=cv, **comp_data)
 
         for proj_data in data.get('projects', []):
@@ -190,25 +195,32 @@ class CVSubmitView(APIView):
             Project.objects.create(cv=cv, **proj_data)
 
         if 'technical_skills' in data:
-            if not any([data['technical_skills'].get(k) for k in ['programming_languages', 'frameworks_databases', 'tools']]):
-                logger.error("Invalid technical skills data: %s", data['technical_skills'])
-                return Response({"error": "Invalid technical skills data"}, status=status.HTTP_400_BAD_REQUEST)
-            TechnicalSkill.objects.update_or_create(cv=cv, defaults=data['technical_skills'])
+            tech_skills = data['technical_skills']
+            if any(tech_skills.get(k) for k in ['programming_languages', 'frameworks_databases', 'tools']):
+                if not any([tech_skills.get(k) for k in ['programming_languages', 'frameworks_databases', 'tools']]):
+                    logger.error("Invalid technical skills data: %s", tech_skills)
+                    return Response({"error": "Invalid technical skills data: at least one field (programming_languages, frameworks_databases, or tools) must be provided"}, status=status.HTTP_400_BAD_REQUEST)
+                TechnicalSkill.objects.update_or_create(cv=cv, defaults=tech_skills)
+            elif all(not tech_skills.get(k) for k in ['programming_languages', 'frameworks_databases', 'tools']):
+                logger.info("Skipping technical skills as all fields are empty")
+                cv.technical_skills.all().delete()
 
         for lang_data in data.get('languages', []):
             if not lang_data.get('name'):
-                logger.error("Invalid language data: %s", lang_data)
-                return Response({"error": "Invalid language data"}, status=status.HTTP_400_BAD_REQUEST)
+                logger.info("Skipping language as name is empty: %s", lang_data)
+                continue
             Language.objects.create(cv=cv, **lang_data)
 
         for comm_data in data.get('community_involvements', []):
-            CommunityInvolvement.objects.create(cv=cv, **comm_data)
+            valid_fields = {k: v for k, v in comm_data.items() if k in ['organization', 'role', 'description']}
+            valid_fields['cv'] = cv
+            CommunityInvolvement.objects.create(**valid_fields)
 
         for award_data in data.get('awards', []):
-            if not all([award_data.get(k) for k in ['award_name', 'year']]):
-                logger.error("Invalid award data: %s", award_data)
-                return Response({"error": "Invalid award data"}, status=status.HTTP_400_BAD_REQUEST)
-            Award.objects.create(cv=cv, **award_data)
+            # Filter out unexpected fields (e.g., presenting_organization)
+            valid_fields = {k: v for k, v in award_data.items() if k in ['award_name', 'year']}  # Adjust based on your model
+            valid_fields['cv'] = cv
+            Award.objects.create(**valid_fields)
 
         for ref_data in data.get('references', []):
             if not all([ref_data.get(k) for k in ['reference_name', 'email']]):

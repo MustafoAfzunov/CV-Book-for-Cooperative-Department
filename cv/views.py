@@ -574,6 +574,8 @@ class CVDetailView(APIView):
             return Response({"error": "CV not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class CVListView(APIView):
+    permission_classes = [IsAuthenticated]  # Restrict to authenticated users
+
     def get(self, request):
         logger.info("CVListView.get called")
         from .models import CVSubmission
@@ -585,7 +587,7 @@ class CVListView(APIView):
                 'surname': cv.surname,
                 'email': cv.email,
                 'major': cv.major,
-                'submitted_at': cv.submitted_at,
+                'submitted_at': cv.submitted_at.isoformat(),  # Ensure datetime is string for frontend
                 'technical_skills': [
                     {
                         'programming_languages': ts.programming_languages,
@@ -599,7 +601,6 @@ class CVListView(APIView):
             for cv in cvs
         ]
         return Response(serialized_data, status=status.HTTP_200_OK)
-
 
 def cv_cards_view(request):
     from .models import CVSubmission

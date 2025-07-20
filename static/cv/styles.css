@@ -434,3 +434,19 @@ textarea {
 .action-btn:hover {
     background-color: #27ae60;
 }
+
+.required {
+  color: red;
+}
+
+.cv-preview { font-family: Arial, sans-serif; font-size:14px; line-height:1.25; }
+.cv-preview h4 { letter-spacing:1px; font-size:15px; margin:22px 0 6px; border-bottom:1px solid #444; padding-bottom:2px; text-transform:uppercase; }
+.cv-row { display:flex; justify-content:space-between; }
+.cv-small { font-size:12px; color:#444; }
+.cv-section-block p { margin:2px 0 4px; }
+.cv-bullets { margin:2px 0 8px 16px; padding:0; }
+.cv-bullets li { margin:0 0 2px; }
+.cv-inline { display:flex; flex-wrap:wrap; gap:40px; }
+.cv-ref-col { flex:1 1 200px; }
+.cv-muted { color:#555; }
+.upper { text-transform:uppercase; }

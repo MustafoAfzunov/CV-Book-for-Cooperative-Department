@@ -56,7 +56,6 @@ class SigninView(APIView):
         
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-
 class PasswordResetView(APIView):
     permission_classes = []
 
@@ -67,7 +66,7 @@ class PasswordResetView(APIView):
             user = CustomUser.objects.get(email=email)
             token = PasswordResetTokenGenerator().make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_url = f"http://localhost:8000/api/auth/password/reset/confirm/{uid}/{token}/"
+            reset_url = f"http://localhost:8000/#password-reset-confirm/{uid}/{token}/"  # Changed to hash format
             send_mail(
                 'Password Reset Request',
                 f'Click the link to reset your password: {reset_url}',
@@ -76,15 +75,35 @@ class PasswordResetView(APIView):
                 fail_silently=False,
             )
             return Response({"message": "Password reset link sent."}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.models import User
+import logging
+
+logger = logging.getLogger(__name__)
 
 class PasswordResetConfirmView(APIView):
-    permission_classes = []
-
+    permission_classes = [AllowAny]
     def post(self, request, uidb64, token):
-        print("Request data:", request.data)
-        serializer = PasswordResetConfirmSerializer(data={**request.data, 'uidb64': uidb64, 'token': token})
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = CustomUser.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({"error": "Invalid user ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        new_password = request.data.get("new_password")
+        if not new_password:
+            return Response({"error": "New password is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        logger.info(f"Password reset successful for user {user.username}")
+        return Response({"message": "Password reset successful"}, status=status.HTTP_200_OK)

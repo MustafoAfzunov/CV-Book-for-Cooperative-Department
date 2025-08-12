@@ -378,49 +378,79 @@
                 </div>
             );
         };
+        
+// PasswordResetConfirm Component
+/*const PasswordResetConfirm = ({ uidb64, token }) => {
+    const [formData, setFormData] = useState({ new_password: '', confirm_password: '' });
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState(null);
 
-        // PasswordResetConfirm Component
-        const PasswordResetConfirm = ({ uidb64, token }) => {
-            const [formData, setFormData] = useState({ new_password: '', confirm_password: '' });
-            const [message, setMessage] = useState('');
+    useEffect(() => {
+        // Check if uidb64 or token is missing
+        if (!uidb64 || !token) {
+            setError('Invalid reset link. Please request a new one.');
+        }
+        // Redirect to hash format if accessed directly with query params
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlUidb64 = urlParams.get('uidb64');
+        const urlToken = urlParams.get('token');
+        if (urlUidb64 && urlToken && (!uidb64 || !token)) {
+            window.location.hash = `#password-reset-confirm/${urlUidb64}/${urlToken}`;
+        }
+    }, [uidb64, token]);
 
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-                if (formData.new_password !== formData.confirm_password) {
-                    setMessage('Passwords do not match');
-                    return;
-                }
-                try {
-                    const response = await fetch(`http://localhost:8000/api/auth/password/reset/confirm/${uidb64}/${token}/`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ new_password: formData.new_password }),
-                    });
-                    const data = await response.json();
-                    setMessage(data.message || data.error || 'Password reset successful');
-                    if (response.ok) {
-                        setTimeout(() => window.location.hash = '#login', 1500);
-                    }
-                } catch (error) {
-                    setMessage('An error occurred. Please try again.');
-                }
-            };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (formData.new_password !== formData.confirm_password) {
+            setMessage('Passwords do not match');
+            return;
+        }
+        try {
+            const response = await fetch(`http://localhost:8000/api/auth/password/reset/confirm/${uidb64}/${token}/`, {  // Fixed URL interpolation
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ new_password: formData.new_password }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                setError(data.error || 'Failed to reset password.');
+                return;
+            }
+            setMessage(data.message || 'Password reset successful');
+            if (response.ok) {
+                setTimeout(() => window.location.hash = '#login', 1500);
+            }
+        } catch (error) {
+            setError('An error occurred. Please try again.');
+        }
+    };
 
-            return (
-                <div className="container mx-auto p-6 flex justify-center items-center min-h-screen bg-gray-100">
-                    <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-                        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Confirm Password Reset</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <input className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" type="password" placeholder="New Password" value={formData.new_password} onChange={(e) => setFormData({ ...formData, new_password: e.target.value })} required />
-                            <input className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" type="password" placeholder="Confirm Password" value={formData.confirm_password} onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })} required />
-                            <button type="submit" className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition duration-200">Reset Password</button>
-                            {message && <p className="mt-4 text-center text-green-600">{message}</p>}
-                        </form>
-                    </div>
+    if (error) {
+        return (
+            <div className="container mx-auto p-6 flex justify-center items-center min-h-screen bg-gray-100">
+                <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg text-center">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-4">Error</h2>
+                    <p className="text-red-600 mb-4">{error}</p>
+                    <a href="#password-reset" className="text-blue-600 hover:underline">Request a new reset link</a>
                 </div>
-            );
-        };
+            </div>
+        );
+    }
 
+    return (
+        <div className="container mx-auto p-6 flex justify-center items-center min-h-screen bg-gray-100">
+            <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+                <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Confirm Password Reset</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <input className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" type="password" placeholder="New Password" value={formData.new_password} onChange={(e) => setFormData({ ...formData, new_password: e.target.value })} required />
+                    <input className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" type="password" placeholder="Confirm Password" value={formData.confirm_password} onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })} required />
+                    <button type="submit" className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition duration-200">Reset Password</button>
+                    {message && <p className="mt-4 text-center text-green-600">{message}</p>}
+                </form>
+            </div>
+        </div>
+    );
+};*/
         // App Component
         const App = () => {
             const [token, setToken] = useState(localStorage.getItem('token'));
@@ -432,7 +462,7 @@
                     const hash = window.location.hash;
                     setPage(hash);
                     if (hash.startsWith('#password-reset-confirm/')) {
-                        const parts = hash.split('/');
+                        //const parts = hash.split('/').filter(part => part); // Filter empty parts
                         const uidb64 = parts[1];
                         const token = parts[2];
                         setResetParams({ uidb64, token });

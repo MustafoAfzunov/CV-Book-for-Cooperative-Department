@@ -380,7 +380,7 @@
         };
         
 // PasswordResetConfirm Component
-/*const PasswordResetConfirm = ({ uidb64, token }) => {
+const PasswordResetConfirm = ({ uidb64, token }) => {
     const [formData, setFormData] = useState({ new_password: '', confirm_password: '' });
     const [message, setMessage] = useState('');
     const [error, setError] = useState(null);
@@ -450,7 +450,7 @@
             </div>
         </div>
     );
-};*/
+};
         // App Component
         const App = () => {
             const [token, setToken] = useState(localStorage.getItem('token'));
@@ -462,7 +462,7 @@
                     const hash = window.location.hash;
                     setPage(hash);
                     if (hash.startsWith('#password-reset-confirm/')) {
-                        //const parts = hash.split('/').filter(part => part); // Filter empty parts
+                        const parts = hash.split('/').filter(part => part); // Filter empty parts
                         const uidb64 = parts[1];
                         const token = parts[2];
                         setResetParams({ uidb64, token });
